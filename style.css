@@ -1,0 +1,63 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+}
+
+table {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#judul {
+    color: #2e7d32;
+    padding-bottom: 15px;
+}
+
+#judul h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+td {
+    text-align: center;
+    color: #757575;
+    padding: 8px;
+    font-weight: 500;
+}
+
+input, select {
+    padding: 10px;
+    border: #4caf50 1.5px solid;
+    border-radius: 6px;
+    text-align: center;
+    outline: none;
+    font-size: 16px;
+    width: 110px;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
+}
+
+#hasil {
+    background-color: #2e7d32;
+    border-radius: 6px;
+    color: white;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+#hasil h1 {
+    margin: 0;
+    font-size: 28px;
+    word-break: break-all; /* Mencegah teks meluber jika angka terlalu panjang */
+}

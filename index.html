@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <form @submit.prevent>
+            <table>
+                <tr>
+                    <td colspan="3" id="judul">
+                        <h2>Simple Calculator</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Bilangan 1</td>
+                    <td>Operasi</td>
+                    <td>Bilangan 2</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input 
+                            type="number"
+                            name="input_bill"
+                            v-model="bill"
+                            placeholder="0">
+                    </td>
+                    <td>
+                        <select v-model="operasi">
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                            <option value="*">x</option>
+                            <option value="/">/</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input 
+                            type="number"
+                            name="input_bil2"
+                            v-model="bil2"
+                            placeholder="0">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" id="hasil">
+                        <h1>{{ hasil }}</h1>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <!-- Menggunakan CDN Vue 2 resmi agar sistem Vue langsung berjalan -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script src="apps.js"></script>
+</body>
+</html>
