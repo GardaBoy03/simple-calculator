@@ -9,7 +9,7 @@
 <body>
 
     <div id="app">
-        <form @submit.prevent @keydown.enter="hitung" @keydown.esc="resetKalkulator" class="wa-container">
+        <form @submit.prevent class="wa-container">
             
             <div class="wa-header">
                 <div class="wa-header-info">
@@ -30,12 +30,14 @@
                         <input 
                             type="number"
                             v-model="bill"
+                            @keydown.enter="hitung"
+                            @keydown.esc="resetKalkulator"
                             placeholder="0">
                     </div>
 
                     <div class="input-group">
                         <label>Operasi</label>
-                        <select v-model="operasi">
+                        <select v-model="operasi" @keydown.enter="hitung" @keydown.esc="resetKalkulator">
                             <option value="+">+</option>
                             <option value="-">-</option>
                             <option value="*">x</option>
@@ -48,6 +50,8 @@
                         <input 
                             type="number"
                             v-model="bil2"
+                            @keydown.enter="hitung"
+                            @keydown.esc="resetKalkulator"
                             placeholder="0">
                     </div>
                 </div>
