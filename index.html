@@ -3,49 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Calculator Mobile Friendly</title>
+    <title>WhatsApp Calculator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="app">
-        <form @submit.prevent @keydown.enter="hitung" @keydown.esc="resetKalkulator" class="calculator-card">
+        <form @submit.prevent @keydown.enter="hitung" @keydown.esc="resetKalkulator" class="wa-container">
             
-            <div id="judul">
-                <h2>Simple Calculator</h2>
-                <span class="petunjuk">Tekan <b>Enter</b> untuk hasil | <b>Esc</b> untuk reset</span>
-            </div>
-            
-            <div class="calculator-grid">
-                <div class="input-group">
-                    <label>Bilangan 1</label>
-                    <input 
-                        type="number"
-                        v-model="bill"
-                        placeholder="0">
-                </div>
-
-                <div class="input-group">
-                    <label>Operasi</label>
-                    <select v-model="operasi">
-                        <option value="+">+</option>
-                        <option value="-">-</option>
-                        <option value="*">x</option>
-                        <option value="/">/</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Bilangan 2</label>
-                    <input 
-                        type="number"
-                        v-model="bil2"
-                        placeholder="0">
+            <div class="wa-header">
+                <div class="wa-header-info">
+                    <div class="wa-avatar">🧮</div>
+                    <div>
+                        <h3>Kalkulator Pintar</h3>
+                        <span class="wa-status">Online</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="hasil">
-                <h1>{{ hasilKalkulasi }}</h1>
+            <div class="wa-chat-body">
+                <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hasil • <b>Esc</b> untuk reset</p>
+
+                <div class="calculator-grid">
+                    <div class="input-group">
+                        <label>Bilangan 1</label>
+                        <input 
+                            type="number"
+                            v-model="bill"
+                            placeholder="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Operasi</label>
+                        <select v-model="operasi">
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                            <option value="*">x</option>
+                            <option value="/">/</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Bilangan 2</label>
+                        <input 
+                            type="number"
+                            v-model="bil2"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div class="wa-bubble-container">
+                    <div class="wa-bubble-hasil">
+                        <span class="wa-label-hasil">Hasil:</span>
+                        <h1>{{ hasilKalkulasi }}</h1>
+                        <span class="wa-time">Just now ✓✓</span>
+                    </div>
+                </div>
             </div>
 
         </form>
