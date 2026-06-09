@@ -4,11 +4,11 @@ var app = new Vue({
         bill: '',
         bil2: '',
         operasi: '+', 
-        hasilKalkulasi: 0 // Menampung hasil yang baru tampil setelah ditekan Enter
+        hasilKalkulasi: 0 // Menyimpan state hasil akhir
     },
     methods: {
         hitung() {
-            // Jika salah satu kolom input masih kosong, set hasil ke 0
+            // Validasi jika ada form kosong
             if (this.bill === '' || this.bil2 === '') {
                 this.hasilKalkulasi = 0;
                 return;
@@ -28,6 +28,7 @@ var app = new Vue({
                     this.hasilKalkulasi = angka1 * angka2;
                     break;
                 case '/': 
+                    // Mencegah error pembagian dengan angka nol
                     this.hasilKalkulasi = angka2 !== 0 ? angka1 / angka2 : 'Tidak bisa dibagi 0';
                     break;
                 default: 
@@ -39,6 +40,11 @@ var app = new Vue({
             this.bil2 = '';
             this.operasi = '+';
             this.hasilKalkulasi = 0;
+            
+            // Opsional: Menghilangkan fokus dari input aktif saat di-reset
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
         }
     }
 });
