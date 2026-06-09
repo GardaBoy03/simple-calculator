@@ -4,11 +4,14 @@ var app = new Vue({
         bill: '',
         bil2: '',
         operasi: '+', 
+        hasilKalkulasi: 0 // Menampung hasil yang baru tampil setelah ditekan Enter
     },
-    computed: {
-        hasil() {
+    methods: {
+        hitung() {
+            // Jika salah satu kolom input masih kosong, set hasil ke 0
             if (this.bill === '' || this.bil2 === '') {
-                return 0;
+                this.hasilKalkulasi = 0;
+                return;
             }
             
             let angka1 = parseFloat(this.bill);
@@ -16,16 +19,26 @@ var app = new Vue({
 
             switch(this.operasi) {
                 case '+': 
-                    return angka1 + angka2;
+                    this.hasilKalkulasi = angka1 + angka2;
+                    break;
                 case '-': 
-                    return angka1 - angka2;
+                    this.hasilKalkulasi = angka1 - angka2;
+                    break;
                 case '*': 
-                    return angka1 * angka2;
+                    this.hasilKalkulasi = angka1 * angka2;
+                    break;
                 case '/': 
-                    return angka2 !== 0 ? angka1 / angka2 : 'Tidak bisa dibagi 0';
+                    this.hasilKalkulasi = angka2 !== 0 ? angka1 / angka2 : 'Tidak bisa dibagi 0';
+                    break;
                 default: 
-                    return 0;
+                    this.hasilKalkulasi = 0;
             }
+        },
+        resetKalkulator() {
+            this.bill = '';
+            this.bil2 = '';
+            this.operasi = '+';
+            this.hasilKalkulasi = 0;
         }
     }
 });
