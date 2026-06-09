@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator Mobile Friendly</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div id="app">
+        <form @submit.prevent @keydown.enter="hitung" @keydown.esc="resetKalkulator" class="calculator-card">
+            
+            <div id="judul">
+                <h2>Simple Calculator</h2>
+                <span class="petunjuk">Tekan <b>Enter</b> untuk hasil | <b>Esc</b> untuk reset</span>
+            </div>
+            
+            <div class="calculator-grid">
+                <div class="input-group">
+                    <label>Bilangan 1</label>
+                    <input 
+                        type="number"
+                        v-model="bill"
+                        placeholder="0">
+                </div>
+
+                <div class="input-group">
+                    <label>Operasi</label>
+                    <select v-model="operasi">
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                        <option value="*">x</option>
+                        <option value="/">/</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Bilangan 2</label>
+                    <input 
+                        type="number"
+                        v-model="bil2"
+                        placeholder="0">
+                </div>
+            </div>
+
+            <div id="hasil">
+                <h1>{{ hasilKalkulasi }}</h1>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
