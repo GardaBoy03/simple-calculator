@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div id="app">
+    <div id="app" :class="{'dark-mode': isDarkMode}">
         <form @submit.prevent class="wa-container">
             
             <div class="wa-header">
@@ -19,10 +19,13 @@
                         <span class="wa-status">Online</span>
                     </div>
                 </div>
+                <button type="button" class="btn-dark-toggle" @click="toggleDarkMode">
+                    {{ isDarkMode ? '☀️' : '🌙' }}
+                </button>
             </div>
 
             <div class="wa-chat-body">
-                <p class="wa-petunjuk">Press <b>Enter</b> for results •<b>Esc</b> to reset</p>
+                <p class="wa-petunjuk">Press <b>Enter</b> for results • <b>Esc</b> to reset</p>
 
                 <div class="wa-history-section" v-if="riwayat.length > 0">
                     <div class="wa-history-header">
