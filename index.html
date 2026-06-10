@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div id="app" :class="{'dark-mode': isDarkMode}">
+    <div id="app">
         <form @submit.prevent class="wa-container">
             
             <div class="wa-header">
@@ -19,9 +19,6 @@
                         <span class="wa-status">Online</span>
                     </div>
                 </div>
-                <button type="button" class="btn-dark-toggle" @click="toggleDarkMode">
-                    {{ isDarkMode ? '☀️' : '🌙' }}
-                </button>
             </div>
 
             <div class="wa-chat-body">
