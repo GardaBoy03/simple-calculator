@@ -29,7 +29,6 @@ body {
     padding: 15px 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Menyeimbangkan posisi toggle */
 }
 
 .wa-header-info {
@@ -58,22 +57,6 @@ body {
 .wa-status {
     font-size: 12px;
     color: #cfd8dc;
-}
-
-/* Tombol Toggle Dark Mode */
-.btn-dark-toggle {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    outline: none;
-    padding: 5px;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-}
-
-.btn-dark-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Area Chat Box */
@@ -286,7 +269,7 @@ input:focus, select:focus {
 }
 
 .wa-bubble-hasil {
-    background-color: #dcf8c6; /* Hijau Chat WA Light */
+    background-color: #dcf8c6; /* Hijau Chat WA */
     padding: 10px 15px;
     border-radius: 8px 0px 8px 8px; /* Sudut ala chat kanan */
     box-shadow: 0 1px 2px rgba(0,0,0,0.15);
@@ -320,116 +303,11 @@ input:focus, select:focus {
     right: 8px;
 }
 
-/* --- THEME VARIANT: WHATSAPP DARK MODE --- */
-.dark-mode .wa-container {
-    background-color: #0b141a; /* Background chat WA Dark */
-}
-
-.dark-mode .wa-header {
-    background-color: #202c33; /* Header WA Dark */
-}
-
-.dark-mode .wa-status {
-    color: #8696a0;
-}
-
-.dark-mode .wa-petunjuk {
-    background-color: #182229;
-    color: #ffd279;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.2);
-}
-
-.dark-mode .wa-history-section {
-    border-top: 1px dashed #3b4a54;
-}
-
-.dark-mode .wa-history-header {
-    color: #8696a0;
-}
-
-.dark-mode .wa-bubble-history {
-    background-color: #202c33;
-    color: #e9edef;
-}
-
-.dark-mode .wa-history-text {
-    color: #8696a0;
-}
-
-.dark-mode .wa-history-total {
-    color: #e9edef;
-}
-
-.dark-mode .wa-history-time {
-    color: #8696a0;
-}
-
-.dark-mode .btn-delete-item {
-    color: #667781;
-}
-
-.dark-mode .calculator-grid {
-    background-color: #111b21;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-.dark-mode .input-group label {
-    color: #00a884;
-}
-
-.dark-mode input, .dark-mode select {
-    background-color: #2a3942;
-    border-color: #3b4a54;
-    color: #fff;
-}
-
-.dark-mode input:focus, .dark-mode select:focus {
-    border-color: #00a884;
-}
-
-.dark-mode .btn-hitung {
-    background-color: #00a884;
-}
-
-.dark-mode .btn-hitung:hover {
-    background-color: #008f72;
-}
-
-.dark-mode .btn-reset {
-    background-color: #202c33;
-    color: #e9edef;
-    border: 1px solid #3b4a54;
-}
-
-.dark-mode .btn-reset:hover {
-    background-color: #2a3942;
-}
-
-.dark-mode .wa-bubble-hasil {
-    background-color: #005c4b; /* Hijau Chat WA Terkirim (Dark) */
-}
-
-.dark-mode .wa-label-hasil {
-    color: #00a884;
-}
-
-.dark-mode .wa-bubble-hasil h1 {
-    color: #e9edef;
-}
-
-.dark-mode .wa-time {
-    color: #00a884;
-}
-
 /* --- RESPONSIVE UNTUK MOBILE --- */
 @media (max-width: 480px) {
     body {
         padding: 0;
         background-color: #ece5dd;
-    }
-
-    .dark-mode body {
-        background-color: #0b141a;
     }
 
     .wa-container {
