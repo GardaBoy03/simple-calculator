@@ -5,14 +5,14 @@ body {
     min-height: 100vh;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #dddbd1; 
+    background-color: #dddbd1; /* Background luar */
     padding: 20px;
     box-sizing: border-box;
 }
 
 /* Container utama menyerupai mockup HP / Chat room */
 .wa-container {
-    background-color: #ece5dd; 
+    background-color: #ece5dd; /* Latar belakang chat WhatsApp */
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     width: 100%;
@@ -79,7 +79,7 @@ body {
     box-shadow: 0 1px 1px rgba(0,0,0,0.08);
 }
 
-/* --- STYLE SECTION HISTORI (BARU) --- */
+/* --- HISTORI / HISTORY SECTION --- */
 .wa-history-section {
     display: flex;
     flex-direction: column;
@@ -269,9 +269,9 @@ input:focus, select:focus {
 }
 
 .wa-bubble-hasil {
-    background-color: #dcf8c6; 
+    background-color: #dcf8c6; /* Hijau Chat WA */
     padding: 10px 15px;
-    border-radius: 8px 0px 8px 8px; 
+    border-radius: 8px 0px 8px 8px; /* Sudut ala chat kanan */
     box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     max-width: 80%;
     min-width: 120px;
