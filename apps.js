@@ -5,9 +5,13 @@ var app = new Vue({
         bil2: '',
         operasi: '+', 
         hasilKalkulasi: 0,
-        riwayat: [] // Menyimpan daftar riwayat kalkulasi
+        riwayat: [], // Menyimpan daftar riwayat kalkulasi
+        isDarkMode: false // Mengontrol status aktif Dark Mode
     },
     methods: {
+        toggleDarkMode() {
+            this.isDarkMode = !this.isDarkMode;
+        },
         hitung() {
             // Jika salah satu kolom input masih kosong, set hasil ke 0
             if (this.bill === '' || this.bil2 === '') {
