@@ -24,6 +24,21 @@
             <div class="wa-chat-body">
                 <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hasil • <b>Esc</b> untuk reset</p>
 
+                <div class="wa-history-section" v-if="riwayat.length > 0">
+                    <div class="wa-history-header">
+                        <span>🕒 Histori Pesan</span>
+                        <button type="button" @click="hapusSemua" class="btn-clear-all">Hapus Semua</button>
+                    </div>
+                    <div class="wa-history-list">
+                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
+                            <button type="button" class="btn-delete-item" @click="hapusSatu(item.id)">×</button>
+                            <span class="wa-history-text">{{ item.teks }}</span>
+                            <strong class="wa-history-total">{{ item.total }}</strong>
+                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="calculator-grid">
                     <div class="input-group">
                         <label>Bilangan 1</label>
@@ -63,7 +78,7 @@
 
                 <div class="wa-bubble-container">
                     <div class="wa-bubble-hasil">
-                        <span class="wa-label-hasil">Hasil:</span>
+                        <span class="wa-label-hasil">Hasil Terakhir:</span>
                         <h1>{{ hasilKalkulasi }}</h1>
                         <span class="wa-time">Just now ✓✓</span>
                     </div>
