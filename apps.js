@@ -9,6 +9,7 @@ var app = new Vue({
     },
     methods: {
         hitung() {
+            // Jika salah satu kolom input masih kosong, set hasil ke 0
             if (this.bill === '' || this.bil2 === '') {
                 this.hasilKalkulasi = 0;
                 return;
@@ -19,7 +20,7 @@ var app = new Vue({
             let hasil = 0;
             let simbolOperasi = this.operasi;
 
-            if (simbolOperasi === '*') simbolOperasi = 'x'; // Mengubah tampilan * menjadi x di riwayat
+            if (simbolOperasi === '*') simbolOperasi = 'x';
 
             switch(this.operasi) {
                 case '+': 
@@ -32,6 +33,7 @@ var app = new Vue({
                     hasil = angka1 * angka2;
                     break;
                 case '/': 
+                    // Validasi pembagian dengan angka 0
                     hasil = angka2 !== 0 ? angka1 / angka2 : 'Tidak bisa dibagi 0';
                     break;
                 default: 
@@ -54,16 +56,17 @@ var app = new Vue({
             this.operasi = '+';
             this.hasilKalkulasi = 0;
             
+            // Menghilangkan kursor fokus dari input setelah reset dilakukan
             if (document.activeElement) {
                 document.activeElement.blur();
             }
         },
         hapusSatu(id) {
-            // Menghapus riwayat berdasarkan ID tertentu
+            // Menghapus satu item dari riwayat berdasarkan ID uniknya
             this.riwayat = this.riwayat.filter(item => item.id !== id);
         },
         hapusSemua() {
-            // Mengosongkan seluruh isi array riwayat
+            // Mengosongkan seluruh array riwayat
             this.riwayat = [];
         }
     }
