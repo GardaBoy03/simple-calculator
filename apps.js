@@ -49,7 +49,7 @@ var app = new Vue({
             let hasil = 0;
             let simbolOperasi = this.operasi;
 
-            if (simbolOperasi === '*') simbolOperasi = 'x';
+            if (simbolOperasi === 'x') simbolOperasi = 'x';
 
             switch(this.operasi) {
                 case '+': 
@@ -58,7 +58,7 @@ var app = new Vue({
                 case '-': 
                     hasil = angka1 - angka2;
                     break;
-                case '*': 
+                case 'x': 
                     hasil = angka1 * angka2;
                     break;
                 case '/': 
