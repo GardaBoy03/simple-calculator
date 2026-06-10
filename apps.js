@@ -5,8 +5,15 @@ var app = new Vue({
         bil2: '', // Menyimpan data murni angka kedua
         operasi: '+', 
         hasilKalkulasi: 0,
-        riwayat: [], 
+        riwayat: [], // Nanti akan diisi dari localStorage saat di-mount
         tampilkanRiwayat: true 
+    },
+    // Fungsi yang otomatis berjalan saat aplikasi pertama kali dimuat
+    mounted() {
+        const riwayatTersimpan = localStorage.getItem('wa_kalkulator_riwayat');
+        if (riwayatTersimpan) {
+            this.riwayat = JSON.parse(riwayatTersimpan);
+        }
     },
     computed: {
         // Interseptor untuk memformat tampilan input 1 secara real-time
@@ -37,6 +44,10 @@ var app = new Vue({
             let parts = nilai.toString().split(',');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             return parts.join(',');
+        },
+        // Fungsi pembantu untuk menyimpan perubahan riwayat ke localStorage
+        simpanKeStorage() {
+            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
         },
         hitung() {
             if (this.bill === '' || this.bil2 === '') {
@@ -78,6 +89,9 @@ var app = new Vue({
                 waktu: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
 
+            // Simpan perubahan ke storage
+            this.simpanKeStorage();
+
             this.tampilkanRiwayat = true;
         },
         toggleRiwayat() {
@@ -95,9 +109,13 @@ var app = new Vue({
         },
         hapusSatu(id) {
             this.riwayat = this.riwayat.filter(item => item.id !== id);
+            // Simpan perubahan setelah ada item yang dihapus
+            this.simpanKeStorage();
         },
         hapusSemua() {
             this.riwayat = [];
+            // Hapus data dari storage karena sudah dikosongkan
+            localStorage.removeItem('wa_kalkulator_riwayat');
         }
     }
 });
