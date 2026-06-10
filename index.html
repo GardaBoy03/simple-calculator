@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div id="app">
+        <form @submit.prevent class="wa-container">
+            
+            <div class="wa-header">
+                <div class="wa-header-info">
+                    <div class="wa-avatar">🧮</div>
+                    <div>
+                        <h3>Kalkulator Pintar</h3>
+                        <span class="wa-status">Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wa-chat-body">
+                <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hasil • <b>Esc</b> untuk reset</p>
+
+                <div class="wa-history-section" v-if="riwayat.length > 0">
+                    <div class="wa-history-header">
+                        <span>🕒 Histori Pesan</span>
+                        <button type="button" @click="hapusSemua" class="btn-clear-all">Hapus Semua</button>
+                    </div>
+                    <div class="wa-history-list">
+                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
+                            <button type="button" class="btn-delete-item" @click="hapusSatu(item.id)">×</button>
+                            <span class="wa-history-text">{{ item.teks }}</span>
+                            <strong class="wa-history-total">{{ item.total }}</strong>
+                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calculator-grid">
+                    <div class="input-group">
+                        <label>Bilangan 1</label>
+                        <input 
+                            type="number"
+                            v-model="bill"
+                            @keydown.enter="hitung"
+                            @keydown.esc="resetKalkulator"
+                            placeholder="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Operasi</label>
+                        <select v-model="operasi" @keydown.enter="hitung" @keydown.esc="resetKalkulator">
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                            <option value="*">x</option>
+                            <option value="/">/</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Bilangan 2</label>
+                        <input 
+                            type="number"
+                            v-model="bil2"
+                            @keydown.enter="hitung"
+                            @keydown.esc="resetKalkulator"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div class="wa-action-buttons">
+                    <button type="button" @click="hitung" class="btn-hitung">Hitung (Enter)</button>
+                    <button type="button" @click="resetKalkulator" class="btn-reset">Reset (Esc)</button>
+                </div>
+
+                <div class="wa-bubble-container">
+                    <div class="wa-bubble-hasil">
+                        <span class="wa-label-hasil">Hasil Terakhir:</span>
+                        <h1>{{ hasilKalkulasi }}</h1>
+                        <span class="wa-time">Just now ✓✓</span>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script src="apps.js"></script>
+</body>
+</html>
