@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wa-calc-v1';
+const CACHE_NAME = 'wa-calc-v2';
 const assets = [
   'index.html',
   'apps.js',
