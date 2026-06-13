@@ -1,21 +1,21 @@
-const CACHE_NAME = 'wa-calc-v2';
+const CACHE_NAME = 'wa-calc-v3'; // Naikkan versi ke v3
 const assets = [
-  'index.html',
-  'apps.js',
-  'style.css',
-  'https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js'
+  './',
+  './index.html',
+  './apps.js',
+  './style.css'
 ];
 
-// Install Service Worker & Simpan Cache
+// Install & simpan aset utama ke cache
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(assets);
-    })
+    }).then(() => self.skipWaiting()) // Paksa SW baru langsung aktif
   );
 });
 
-// Aktivasi & Hapus Cache Lama
+// Bersihkan cache lama
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => {
@@ -26,15 +26,22 @@ self.addEventListener('activate', e => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Ambil data dari Cache saat Offline
+// Strategi Pintar: Coba ambil dari internet dulu, kalau offline baru pakai cache
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cachedResponse => {
-      return cachedResponse || fetch(e.request);
-    })
+    fetch(e.request)
+      .then(res => {
+        // Jika berhasil, kloning dan simpan ke cache
+        const resClone = res.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(e.request, resClone);
+        });
+        return res;
+      })
+      .catch(() => caches.match(e.request).then(cachedResponse => cachedResponse))
   );
 });
