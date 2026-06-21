@@ -25,7 +25,7 @@
 
         <div class="wa-chat-body">
 
-            <!-- TAB MODE -->
+            <!-- TAB MODE - Dropdown Select -->
             <div class="mode-select-wrapper">
                 <select class="mode-select" v-model="modeAktif" @change="gantiMode(modeAktif)">
                     <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ tab.label }}</option>
@@ -45,30 +45,30 @@
                         <div class="std-display">{{ standarDisplayFormatted }}</div>
                     </div>
                     <div class="std-keypad">
-                        <button type="button" class="std-key std-key-fn" @click="stdClear">AC</button>
-                        <button type="button" class="std-key std-key-fn" @click="stdBackspace">⌫</button>
-                        <button type="button" class="std-key std-key-fn" @click="stdPercent">%</button>
-                        <button type="button" class="std-key std-key-op" @click="stdOperator('/')">÷</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdClear()">AC</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdBackspace()">⌫</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdPercent()">%</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('/')">÷</button>
 
-                        <button type="button" class="std-key" @click="stdDigit('7')">7</button>
-                        <button type="button" class="std-key" @click="stdDigit('8')">8</button>
-                        <button type="button" class="std-key" @click="stdDigit('9')">9</button>
-                        <button type="button" class="std-key std-key-op" @click="stdOperator('*')">×</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('7')">7</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('8')">8</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('9')">9</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('*')">×</button>
 
-                        <button type="button" class="std-key" @click="stdDigit('4')">4</button>
-                        <button type="button" class="std-key" @click="stdDigit('5')">5</button>
-                        <button type="button" class="std-key" @click="stdDigit('6')">6</button>
-                        <button type="button" class="std-key std-key-op" @click="stdOperator('-')">−</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('4')">4</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('5')">5</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('6')">6</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('-')">−</button>
 
-                        <button type="button" class="std-key" @click="stdDigit('1')">1</button>
-                        <button type="button" class="std-key" @click="stdDigit('2')">2</button>
-                        <button type="button" class="std-key" @click="stdDigit('3')">3</button>
-                        <button type="button" class="std-key std-key-op" @click="stdOperator('+')">+</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('1')">1</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('2')">2</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('3')">3</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('+')">+</button>
 
-                        <button type="button" class="std-key std-key-fn" @click="stdToggleSign">±</button>
-                        <button type="button" class="std-key" @click="stdDigit('0')">0</button>
-                        <button type="button" class="std-key" @click="stdDecimal">,</button>
-                        <button type="button" class="std-key std-key-eq" @click="stdEquals">=</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdToggleSign()">±</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('0')">0</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDecimal()">,</button>
+                        <button type="button" class="std-key std-key-eq" @click="playSound('click'); stdEquals()">=</button>
                     </div>
                 </div>
                 <p class="mode-hint">💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja</p>
@@ -81,7 +81,7 @@
                 <div class="persen-mode-tabs">
                     <button type="button" v-for="pt in persenTabs" :key="pt.id"
                         :class="['persen-tab', { active: persen.subMode === pt.id }]"
-                        @click="persen.subMode = pt.id; resetHasil()">
+                        @click="playSound('click'); persen.subMode = pt.id; resetHasil()">
                         {{ pt.label }}
                     </button>
                 </div>
@@ -91,12 +91,12 @@
                     <div class="input-group">
                         <label>Harga Asal (Rp)</label>
                         <input type="text" inputmode="numeric" v-model="persen.harga"
-                            @keydown.enter="hitungPersen" placeholder="100.000">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="100.000">
                     </div>
                     <div class="input-group">
                         <label>Diskon (%)</label>
                         <input type="text" inputmode="numeric" v-model="persen.pct"
-                            @keydown.enter="hitungPersen" placeholder="20">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="20">
                     </div>
                 </div>
 
@@ -105,12 +105,12 @@
                     <div class="input-group">
                         <label>Nilai</label>
                         <input type="text" inputmode="numeric" v-model="persen.nilai"
-                            @keydown.enter="hitungPersen" placeholder="25">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="25">
                     </div>
                     <div class="input-group">
                         <label>Dari Total</label>
                         <input type="text" inputmode="numeric" v-model="persen.total"
-                            @keydown.enter="hitungPersen" placeholder="200">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="200">
                     </div>
                 </div>
 
@@ -119,12 +119,12 @@
                     <div class="input-group">
                         <label>Nilai Asal</label>
                         <input type="text" inputmode="numeric" v-model="persen.harga"
-                            @keydown.enter="hitungPersen" placeholder="50.000">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="50.000">
                     </div>
                     <div class="input-group">
                         <label>Naik / Turun (%)</label>
                         <input type="text" inputmode="numeric" v-model="persen.pct"
-                            @keydown.enter="hitungPersen" placeholder="15">
+                            @keydown.enter="playSound('click'); hitungPersen" placeholder="15">
                     </div>
                 </div>
 
@@ -133,7 +133,7 @@
                     <div class="persen-mode-tabs">
                         <button type="button" v-for="pm in ppnModeTabs" :key="pm.id"
                             :class="['persen-tab', { active: persen.ppnMode === pm.id }]"
-                            @click="persen.ppnMode = pm.id; resetHasil()">
+                            @click="playSound('click'); persen.ppnMode = pm.id; resetHasil()">
                             {{ pm.label }}
                         </button>
                     </div>
@@ -141,21 +141,17 @@
                         <div class="input-group">
                             <label>{{ persen.ppnMode === 'tambah' ? 'Harga Sebelum PPN (DPP)' : 'Harga Sudah Termasuk PPN' }}</label>
                             <input type="text" inputmode="numeric" v-model="persen.ppnHarga"
-                                @keydown.enter="hitungPersen" placeholder="100.000">
+                                @keydown.enter="playSound('click'); hitungPersen" placeholder="100.000">
                         </div>
                         <div class="input-group">
                             <label>Tarif PPN (%)</label>
                             <input type="text" inputmode="numeric" v-model="persen.ppnTarif"
-                                @keydown.enter="hitungPersen" placeholder="11">
+                                @keydown.enter="playSound('click'); hitungPersen" placeholder="11">
                         </div>
                     </div>
                 </div>
 
-                <p class="mode-hint" v-if="persen.subMode === 'diskon'">💡 Harga setelah diskon & jumlah hemat</p>
-                <p class="mode-hint" v-if="persen.subMode === 'dari'">💡 Berapa persen Nilai dari Total</p>
-                <p class="mode-hint" v-if="persen.subMode === 'naik'">💡 Gunakan angka negatif untuk turun (−10)</p>
-                <p class="mode-hint" v-if="persen.subMode === 'ppn'">
-                    💡 {{ persen.ppnMode === 'tambah' ? 'Hitung PPN dari harga dasar (DPP), lalu jadi harga jual' : 'Hitung DPP dari harga yang sudah termasuk PPN' }}
+                <p class="mode-hint">💡 Hitung persen dengan mudah — diskon, komposisi, perubahan nilai, dan PPN
                 </p>
             </div>
 
@@ -166,7 +162,7 @@
                 <div class="pangkat-mode-tabs">
                     <button type="button" v-for="pt in pangkatTabs" :key="pt.id"
                         :class="['persen-tab', { active: pangkat.subMode === pt.id }]"
-                        @click="pangkat.subMode = pt.id; resetHasil()">
+                        @click="playSound('click'); pangkat.subMode = pt.id; resetHasil()">
                         {{ pt.label }}
                     </button>
                 </div>
@@ -175,17 +171,17 @@
                     <div class="input-group" v-if="pangkat.subMode !== 'akar_n'">
                         <label>{{ labelPangkatInput }}</label>
                         <input type="text" inputmode="decimal" v-model="pangkat.a"
-                            @keydown.enter="hitungPangkat" placeholder="0">
+                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="0">
                     </div>
                     <div class="input-group" v-if="pangkat.subMode === 'pangkat_n' || pangkat.subMode === 'akar_n'">
                         <label>{{ pangkat.subMode === 'pangkat_n' ? 'Pangkat ke-' : 'Akar ke-' }}</label>
                         <input type="text" inputmode="numeric" v-model="pangkat.n"
-                            @keydown.enter="hitungPangkat" placeholder="3">
+                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="3">
                     </div>
                     <div class="input-group" v-if="pangkat.subMode === 'akar_n'">
                         <label>Nilai</label>
                         <input type="text" inputmode="decimal" v-model="pangkat.a"
-                            @keydown.enter="hitungPangkat" placeholder="0">
+                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="0">
                     </div>
                 </div>
                 <p class="mode-hint">{{ hintPangkat }}</p>
@@ -198,7 +194,7 @@
                 <div class="persen-mode-tabs">
                     <button type="button" v-for="st in spbuTabs" :key="st.id"
                         :class="['persen-tab', { active: spbu.subMode === st.id }]"
-                        @click="spbu.subMode = st.id; resetHasil()">
+                        @click="playSound('click'); spbu.subMode = st.id; resetHasil()">
                         {{ st.label }}
                     </button>
                 </div>
@@ -208,12 +204,12 @@
                     <div class="input-group">
                         <label>Uang yang Dibawa (Rp)</label>
                         <input type="text" inputmode="numeric" v-model="spbu.uang"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="50.000">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="50.000">
                     </div>
                     <div class="input-group">
                         <label>Harga BBM per Liter (Rp)</label>
                         <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
                     </div>
                 </div>
 
@@ -222,12 +218,12 @@
                     <div class="input-group">
                         <label>Total Bayar di Kasir (Rp)</label>
                         <input type="text" inputmode="numeric" v-model="spbu.totalBayar"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="100.000">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="100.000">
                     </div>
                     <div class="input-group">
                         <label>Jumlah Liter Terisi</label>
                         <input type="text" inputmode="decimal" v-model="spbu.liter"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
                     </div>
                 </div>
 
@@ -236,12 +232,12 @@
                     <div class="input-group">
                         <label>Jumlah Liter yang Diisi</label>
                         <input type="text" inputmode="decimal" v-model="spbu.liter"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
                     </div>
                     <div class="input-group">
                         <label>Harga BBM per Liter (Rp)</label>
                         <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
-                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
                     </div>
                 </div>
 
@@ -251,15 +247,56 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
+            <!-- MODE: CATATAN (NOTES) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div v-if="modeAktif === 'catatan'">
+                <div class="catatan-container">
+                    <div class="catatan-header">
+                        <h4>Catatan Kalkulasi Anda</h4>
+                        <button type="button" class="btn-refresh-catatan" @click="playSound('click'); muatCatatan()" title="Refresh">🔄</button>
+                    </div>
+                    
+                    <div class="catatan-input-group">
+                        <textarea v-model="catatan.teks" 
+                            @input="catatan.autoSave = true"
+                            placeholder="Tulis catatan atau rumus kalkulasi Anda di sini..."
+                            class="catatan-textarea"></textarea>
+                        <div class="catatan-actions">
+                            <button type="button" class="btn-simpan-catatan" @click="playSound('click'); simpanCatatan()">💾 Simpan</button>
+                            <button type="button" class="btn-hapus-catatan" @click="playSound('click'); hapusCatatan()">🗑️ Hapus</button>
+                        </div>
+                    </div>
+
+                    <div v-if="catatan.waktuSimpan" class="catatan-info">
+                        ✓ Tersimpan: {{ catatan.waktuSimpan }}
+                    </div>
+
+                    <div class="catatan-history" v-if="catatanHistory.length > 0">
+                        <h5>📜 Riwayat Catatan</h5>
+                        <div class="catatan-history-list">
+                            <div v-for="(c, idx) in catatanHistory" :key="idx" class="catatan-history-item">
+                                <button type="button" class="catatan-history-btn" @click="playSound('click'); muatCatatan(idx)">
+                                    <span class="catatan-history-preview">{{ c.teks.substring(0, 40) }}...</span>
+                                    <span class="catatan-history-time">{{ c.waktu }}</span>
+                                </button>
+                                <button type="button" class="catatan-history-del" @click="playSound('click'); hapusCatatanHistory(idx)">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mode-hint">💡 Simpan catatan kalkulasi Anda untuk referensi di masa mendatang</p>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
             <!-- TOMBOL AKSI -->
             <!-- ═══════════════════════════════════════════════ -->
-            <div class="wa-action-buttons" v-if="modeAktif !== 'standar'">
-                <button type="button" @click="hitungAktif" class="btn-hitung">Hitung</button>
-                <button type="button" @click="resetKalkulator" class="btn-reset">Reset</button>
+            <div class="wa-action-buttons" v-if="modeAktif !== 'standar' && modeAktif !== 'catatan'">
+                <button type="button" @click="playSound('click'); hitungAktif()" class="btn-hitung">Hitung</button>
+                <button type="button" @click="playSound('click'); resetKalkulator()" class="btn-reset">Reset</button>
             </div>
 
             <!-- HASIL -->
-            <div class="wa-bubble-container">
+            <div class="wa-bubble-container" v-if="modeAktif !== 'catatan'">
                 <div class="wa-bubble-hasil">
                     <span class="wa-label-hasil">Hasil:</span>
                     <!-- Hasil multi-baris untuk persen -->
@@ -275,19 +312,19 @@
             </div>
 
             <!-- RIWAYAT -->
-            <div class="wa-history-section" v-if="riwayat.length > 0">
+            <div class="wa-history-section" v-if="riwayat.length > 0 && modeAktif !== 'catatan'">
                 <div class="wa-history-header">
                     <div class="wa-history-title-wrapper">
                         <span>🕒 Riwayat</span>
-                        <button type="button" @click="toggleRiwayat" class="btn-toggle-history">
+                        <button type="button" @click="playSound('click'); toggleRiwayat()" class="btn-toggle-history">
                             {{ tampilkanRiwayat ? '[ Sembunyikan ]' : '[ Tampilkan ]' }}
                         </button>
                     </div>
-                    <button type="button" @click="hapusSemua" class="btn-clear-all">Hapus Semua</button>
+                    <button type="button" @click="playSound('click'); hapusSemua()" class="btn-clear-all">Hapus Semua</button>
                 </div>
                 <div class="wa-history-list" v-show="tampilkanRiwayat">
                     <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
-                        <button type="button" class="btn-delete-item" @click="hapusSatu(item.id)">×</button>
+                        <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
                         <span class="wa-history-text">{{ item.teks }}</span>
                         <strong class="wa-history-total">{{ item.total }}</strong>
                         <span class="wa-history-time">{{ item.waktu }} ✓</span>

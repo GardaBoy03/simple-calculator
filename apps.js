@@ -1,6 +1,7 @@
 // ============================================================
-//  Kalkulator WhatsApp — apps.js  v3
-//  Mode: Standar | Persen | Pangkat & Akar | SPBU
+//  Kalkulator WhatsApp — apps.js  v4
+//  Mode: Standar | Persen | Pangkat & Akar | SPBU | Catatan
+//  Sound Effects & Notes Feature
 // ============================================================
 
 
@@ -18,6 +19,52 @@ function formatDesimal(nilai, angka = 6) {
     return parseFloat(nilai.toFixed(angka)).toString().replace('.', ',');
 }
 
+// ─── Sound Manager ─────────────────────────────────────────
+class SoundManager {
+    constructor() {
+        this.sounds = {};
+        this.enabled = true;
+        this.loadSounds();
+    }
+
+    loadSounds() {
+        // Coba muat dari assets/sound/
+        const soundPath = 'assets/sound/';
+        const soundNames = ['click'];
+        
+        soundNames.forEach(name => {
+            const audio = new Audio();
+            audio.src = soundPath + name + '.mp3';
+            audio.preload = 'auto';
+            // Fallback ke .wav jika .mp3 gagal
+            audio.onerror = () => {
+                audio.src = soundPath + name + '.wav';
+            };
+            this.sounds[name] = audio;
+        });
+    }
+
+    play(soundName) {
+        if (!this.enabled || !this.sounds[soundName]) return;
+        try {
+            const audio = this.sounds[soundName];
+            audio.currentTime = 0;
+            audio.play().catch(err => {
+                // Silent fail jika browser belum izin audio
+                console.debug('Audio play failed:', err);
+            });
+        } catch (err) {
+            console.debug('Sound error:', err);
+        }
+    }
+
+    toggle() {
+        this.enabled = !this.enabled;
+    }
+}
+
+const soundManager = new SoundManager();
+
 // ============================================================
 //  Vue Instance
 // ============================================================
@@ -31,6 +78,7 @@ window.vueApp = new Vue({
             { id: 'persen',   label: '% Persen'  },
             { id: 'pangkat',  label: '√ Pangkat' },
             { id: 'spbu',     label: '⛽ SPBU' },
+            { id: 'catatan',  label: '📝 Catatan' },
         ],
 
         // ── Standar (kalkulator bebas seperti kalkulator pada umumnya) ──
@@ -81,6 +129,14 @@ window.vueApp = new Vue({
             { id: 'total', label: '🧾 Total Bayar' },
         ],
 
+        // ── Catatan (Notes) ──
+        catatan: {
+            teks: '',
+            waktuSimpan: '',
+            autoSave: false,
+        },
+        catatanHistory: [],
+
         // ── Hasil ──
         hasilKalkulasi: 0,
         hasilMulti: [],   // [{label, nilai}] untuk persen
@@ -91,8 +147,27 @@ window.vueApp = new Vue({
     },
 
     mounted() {
-        const saved = localStorage.getItem('wa_kalkulator_riwayat');
-        if (saved) { try { this.riwayat = JSON.parse(saved); } catch(e) {} }
+        // Load riwayat kalkulasi
+        const savedRiwayat = localStorage.getItem('wa_kalkulator_riwayat');
+        if (savedRiwayat) { 
+            try { this.riwayat = JSON.parse(savedRiwayat); } catch(e) {} 
+        }
+
+        // Load catatan
+        const savedCatatan = localStorage.getItem('wa_kalkulator_catatan');
+        if (savedCatatan) {
+            try {
+                const data = JSON.parse(savedCatatan);
+                this.catatan.teks = data.teks || '';
+                this.catatan.waktuSimpan = data.waktuSimpan || '';
+            } catch(e) {}
+        }
+
+        // Load catatan history
+        const savedHistory = localStorage.getItem('wa_kalkulator_catatan_history');
+        if (savedHistory) {
+            try { this.catatanHistory = JSON.parse(savedHistory); } catch(e) {}
+        }
     },
 
     computed: {
@@ -132,6 +207,11 @@ window.vueApp = new Vue({
     },
 
     methods: {
+        // ── Sound Effects ─────────────────────────────────────
+        playSound(soundName) {
+            soundManager.play(soundName);
+        },
+
         // ── Navigasi Tab ──────────────────────────────────────
         gantiMode(id) {
             this.modeAktif = id;
@@ -166,6 +246,55 @@ window.vueApp = new Vue({
             });
             this.simpanKeStorage();
             this.tampilkanRiwayat = true;
+        },
+
+        // ── Catatan (Notes) Methods ───────────────────────────
+        simpanCatatan() {
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            this.catatan.waktuSimpan = now;
+            
+            // Simpan catatan utama
+            const catatanData = {
+                teks: this.catatan.teks,
+                waktuSimpan: this.catatan.waktuSimpan
+            };
+            localStorage.setItem('wa_kalkulator_catatan', JSON.stringify(catatanData));
+
+            // Tambah ke history jika ada isi baru
+            if (this.catatan.teks.trim()) {
+                const historyItem = {
+                    teks: this.catatan.teks,
+                    waktu: now
+                };
+                this.catatanHistory.unshift(historyItem);
+                // Batasi history ke 10 item
+                if (this.catatanHistory.length > 10) {
+                    this.catatanHistory = this.catatanHistory.slice(0, 10);
+                }
+                localStorage.setItem('wa_kalkulator_catatan_history', JSON.stringify(this.catatanHistory));
+            }
+        },
+
+        hapusCatatan() {
+            if (confirm('Hapus catatan saat ini?')) {
+                this.catatan.teks = '';
+                this.catatan.waktuSimpan = '';
+                localStorage.removeItem('wa_kalkulator_catatan');
+            }
+        },
+
+        muatCatatan(idx) {
+            if (idx !== undefined && this.catatanHistory[idx]) {
+                this.catatan.teks = this.catatanHistory[idx].teks;
+                this.catatan.waktuSimpan = this.catatanHistory[idx].waktu;
+            }
+        },
+
+        hapusCatatanHistory(idx) {
+            if (confirm('Hapus item dari riwayat?')) {
+                this.catatanHistory.splice(idx, 1);
+                localStorage.setItem('wa_kalkulator_catatan_history', JSON.stringify(this.catatanHistory));
+            }
         },
 
         // ── MODE: STANDAR (kalkulator bebas) ──────────────────
