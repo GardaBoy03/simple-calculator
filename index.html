@@ -75,47 +75,6 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: PECAHAN -->
-            <!-- ═══════════════════════════════════════════════ -->
-            <div v-if="modeAktif === 'pecahan'">
-                <div class="fraksi-grid">
-                    <!-- Pecahan 1 -->
-                    <div class="fraksi-box">
-                        <label>Pecahan 1</label>
-                        <div class="fraksi-input">
-                            <input type="text" inputmode="numeric" v-model="pecahan.a_num"
-                                @keydown.enter="hitungPecahan" placeholder="1" class="fraksi-angka">
-                            <span class="fraksi-garis"></span>
-                            <input type="text" inputmode="numeric" v-model="pecahan.a_den"
-                                @keydown.enter="hitungPecahan" placeholder="2" class="fraksi-angka">
-                        </div>
-                    </div>
-                    <!-- Operasi -->
-                    <div class="fraksi-op">
-                        <label>Op</label>
-                        <select v-model="pecahan.op">
-                            <option value="+">+</option>
-                            <option value="-">−</option>
-                            <option value="*">×</option>
-                            <option value="/">÷</option>
-                        </select>
-                    </div>
-                    <!-- Pecahan 2 -->
-                    <div class="fraksi-box">
-                        <label>Pecahan 2</label>
-                        <div class="fraksi-input">
-                            <input type="text" inputmode="numeric" v-model="pecahan.b_num"
-                                @keydown.enter="hitungPecahan" placeholder="1" class="fraksi-angka">
-                            <span class="fraksi-garis"></span>
-                            <input type="text" inputmode="numeric" v-model="pecahan.b_den"
-                                @keydown.enter="hitungPecahan" placeholder="3" class="fraksi-angka">
-                        </div>
-                    </div>
-                </div>
-                <p class="mode-hint">💡 Contoh: <b>1/2 + 1/3 = 5/6</b> • Hasil otomatis disederhanakan</p>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════ -->
             <!-- MODE: PERSEN -->
             <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'persen'">
@@ -303,7 +262,7 @@
             <div class="wa-bubble-container">
                 <div class="wa-bubble-hasil">
                     <span class="wa-label-hasil">Hasil:</span>
-                    <!-- Hasil multi-baris untuk persen/pecahan -->
+                    <!-- Hasil multi-baris untuk persen -->
                     <div v-if="hasilMulti.length > 0">
                         <div v-for="(h, i) in hasilMulti" :key="i" class="hasil-multi-row">
                             <span class="hasil-multi-label">{{ h.label }}</span>

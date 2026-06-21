@@ -1,27 +1,8 @@
 // ============================================================
 //  Kalkulator WhatsApp — apps.js  v3
-//  Mode: Standar | Pecahan | Persen | Pangkat & Akar | SPBU
+//  Mode: Standar | Persen | Pangkat & Akar | SPBU
 // ============================================================
 
-// ─── Matematika Pecahan ──────────────────────────────────────
-function gcd(a, b) { return b === 0 ? Math.abs(a) : gcd(b, a % b); }
-function sederhanakan(num, den) {
-    if (den === 0) return { num: 0, den: 0, err: 'Penyebut tidak boleh 0' };
-    const g = gcd(Math.abs(num), Math.abs(den));
-    const n = num / g, d = den / g;
-    return d < 0 ? { num: -n, den: -d } : { num: n, den: d };
-}
-function operasiPecahan(an, ad, op, bn, bd) {
-    let rn, rd;
-    switch (op) {
-        case '+': rn = an * bd + bn * ad; rd = ad * bd; break;
-        case '-': rn = an * bd - bn * ad; rd = ad * bd; break;
-        case '*': rn = an * bn; rd = ad * bd; break;
-        case '/': rn = an * bd; rd = ad * bn; break;
-        default:  rn = 0; rd = 1;
-    }
-    return sederhanakan(rn, rd);
-}
 
 // ─── Format Angka ────────────────────────────────────────────
 function formatRibuan(nilai) {
@@ -47,7 +28,6 @@ window.vueApp = new Vue({
         modeAktif: 'standar',
         tabs: [
             { id: 'standar',  label: '🔢 Standar' },
-            { id: 'pecahan',  label: '½ Pecahan' },
             { id: 'persen',   label: '% Persen'  },
             { id: 'pangkat',  label: '√ Pangkat' },
             { id: 'spbu',     label: '⛽ SPBU' },
@@ -61,9 +41,6 @@ window.vueApp = new Vue({
             overwrite: true,  // true = digit berikutnya menimpa layar
             exprText: '',     // teks ekspresi kecil di atas layar (mis. "12 +")
         },
-
-        // ── Pecahan ──
-        pecahan: { a_num: '', a_den: '', b_num: '', b_den: '', op: '+' },
 
         // ── Persen ──
         persen: {
@@ -106,7 +83,7 @@ window.vueApp = new Vue({
 
         // ── Hasil ──
         hasilKalkulasi: 0,
-        hasilMulti: [],   // [{label, nilai}] untuk persen/pecahan
+        hasilMulti: [],   // [{label, nilai}] untuk persen
 
         // ── Riwayat ──
         riwayat: [],
@@ -169,7 +146,6 @@ window.vueApp = new Vue({
         hitungAktif() {
             const map = {
                 standar: 'stdEquals',
-                pecahan: 'hitungPecahan',
                 persen:  'hitungPersen',
                 pangkat: 'hitungPangkat',
                 spbu:    'hitungSpbu',
@@ -325,34 +301,6 @@ window.vueApp = new Vue({
             else if (k === 'Backspace') { this.stdBackspace(); }
             else if (k === 'Escape') { this.stdClear(); }
             else if (k === '%') { this.stdPercent(); }
-        },
-
-        // ── MODE: PECAHAN ─────────────────────────────────────
-        hitungPecahan() {
-            const an = parseInt(this.pecahan.a_num), ad = parseInt(this.pecahan.a_den);
-            const bn = parseInt(this.pecahan.b_num), bd = parseInt(this.pecahan.b_den);
-            if ([an,ad,bn,bd].some(isNaN)) { this.hasilKalkulasi = 'Isi semua field'; return; }
-            if (ad === 0 || bd === 0) { this.hasilKalkulasi = 'Penyebut ≠ 0'; return; }
-
-            const hasil = operasiPecahan(an, ad, this.pecahan.op, bn, bd);
-            if (hasil.err) { this.hasilKalkulasi = hasil.err; this.hasilMulti = []; return; }
-
-            const { num, den } = hasil;
-            const desimalVal = num / den;
-            const tampilPecahan = den === 1 ? `${num}` : `${num}/${den}`;
-            const tampilDesimal = formatDesimal(desimalVal);
-
-            this.hasilMulti = [
-                { label: 'Pecahan:', nilai: tampilPecahan },
-                { label: 'Desimal:', nilai: tampilDesimal },
-            ];
-            this.hasilKalkulasi = 0;
-
-            const opSimbol = { '+':'+', '-':'−', '*':'×', '/':'÷' }[this.pecahan.op];
-            this.tambahRiwayat(
-                `${an}/${ad} ${opSimbol} ${bn}/${bd} =`,
-                tampilPecahan
-            );
         },
 
         // ── MODE: PERSEN ──────────────────────────────────────
@@ -536,7 +484,6 @@ window.vueApp = new Vue({
         // ── Reset ─────────────────────────────────────────────
         resetKalkulator() {
             this.standar = { display: '0', stored: null, operator: null, overwrite: true, exprText: '' };
-            this.pecahan = { a_num: '', a_den: '', b_num: '', b_den: '', op: '+' };
             this.persen.harga = ''; this.persen.pct = '';
             this.persen.nilai = ''; this.persen.total = '';
             this.persen.ppnHarga = ''; this.persen.ppnTarif = '11';

@@ -1,6 +1,6 @@
 /* ============================================================
    Kalkulator WhatsApp — style.css  v3
-   Mode: Standar | Pecahan | Persen | Pangkat & Akar | SPBU
+   Mode: Standar | Persen | Pangkat & Akar | SPBU
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -245,52 +245,6 @@ input:focus, select:focus {
     box-shadow: 0 4px 14px rgba(11,110,96,0.35);
 }
 
-/* ── Pecahan Grid (tampilan fraksi asli, seperti di buku/kalkulator) ── */
-.fraksi-grid {
-    display: flex; align-items: center; gap: 10px;
-    background: #fff; padding: 16px; border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 10px;
-    border: 1px solid #f0f0f0;
-}
-.fraksi-box { display: flex; flex-direction: column; flex: 1; }
-.fraksi-box label { font-size: 11px; color: #0b6e60; margin-bottom: 6px; font-weight: 700; text-align: center; letter-spacing: .2px; }
-.fraksi-input { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.fraksi-angka {
-    width: 100%; text-align: center !important; font-size: 17px; font-weight: 700; height: 42px;
-    border-radius: 8px;
-}
-/* Garis fraksi sungguhan, menyatukan pembilang & penyebut */
-.fraksi-garis {
-    width: 85%;
-    height: 3px;
-    align-self: center;
-    background: linear-gradient(90deg, transparent, #0b6e60 12%, #0b6e60 88%, transparent);
-    border-radius: 2px;
-    margin: 1px 0;
-}
-.fraksi-op { display: flex; flex-direction: column; align-items: center; flex: 0 0 56px; }
-.fraksi-op label { font-size: 11px; color: #0b6e60; margin-bottom: 6px; font-weight: 700; }
-/* Operator pecahan ditampilkan sebagai tombol bundar khas kalkulator */
-.fraksi-op select {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(150deg, #1cb6a1, #0b6e60);
-    color: #fff;
-    border: none;
-    font-size: 19px;
-    font-weight: 800;
-    box-shadow: 0 4px 10px rgba(11,110,96,0.4), inset 0 -2px 4px rgba(0,0,0,0.15);
-    background-image: none;
-    padding: 0;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.fraksi-op select:hover { transform: scale(1.08); }
-.fraksi-op select:focus {
-    background: linear-gradient(150deg, #1cb6a1, #0b6e60);
-    box-shadow: 0 4px 10px rgba(11,110,96,0.4), 0 0 0 3px rgba(37,217,183,0.35);
-}
-
 /* ── Tombol Aksi ───────────────────────────────────────────── */
 .wa-action-buttons { display: flex; gap: 10px; margin-bottom: 16px; margin-top: 4px; }
 .wa-action-buttons button {
@@ -318,7 +272,7 @@ input:focus, select:focus {
 .wa-label-hasil { font-size: 11px; color: #557a3a; display: block; text-align: left; font-weight: 600; margin-bottom: 4px; }
 .wa-bubble-hasil h1 { margin: 4px 0 18px; font-size: 26px; color: #303030; word-break: break-all; }
 
-/* Hasil multi-baris (persen, pecahan) */
+/* Hasil multi-baris (persen) */
 .hasil-multi-row {
     display: flex; justify-content: space-between; align-items: baseline;
     gap: 12px; padding: 3px 0;
@@ -397,13 +351,6 @@ input:focus, select:focus {
     .mode-select { font-size: 13px; padding: 0 38px 0 14px; height: 46px; }
     .mode-select-arrow { right: 15px; }
 
-    /* Pecahan: jaga agar dua kotak pecahan + operator tetap proporsional,
-       tapi mengecilkan padding/gap agar tidak overflow di layar sempit */
-    .fraksi-grid { padding: 12px; gap: 8px; }
-    .fraksi-op { flex: 0 0 48px; }
-    .fraksi-angka { font-size: 15px; height: 38px; }
-    .fraksi-op select { width: 42px; height: 42px; font-size: 16px; }
-
     .persen-tab, .pangkat-mode-tabs .persen-tab { font-size: 11px; padding: 6px 6px; min-width: 64px; }
 
     .single-col-grid { padding: 12px; }
@@ -417,11 +364,6 @@ input:focus, select:focus {
 /* Layar sangat sempit (mis. iPhone SE, ~360px atau kurang) */
 @media (max-width: 360px) {
     .wa-chat-body { padding: 10px; }
-    .fraksi-grid { gap: 5px; }
-    .fraksi-op { flex: 0 0 42px; }
-    .fraksi-garis { width: 80%; }
-    .fraksi-angka { font-size: 14px; height: 36px; padding: 4px; }
-    .fraksi-op select { width: 38px; height: 38px; font-size: 14px; }
     .persen-tab { font-size: 10.5px; padding: 6px 4px; min-width: 56px; }
     .wa-bubble-hasil h1 { font-size: 19px; }
     .wa-bubble-hasil { min-width: 0; }
