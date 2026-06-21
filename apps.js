@@ -51,6 +51,7 @@ window.vueApp = new Vue({
             { id: 'pecahan',  label: '½ Pecahan' },
             { id: 'persen',   label: '% Persen'  },
             { id: 'pangkat',  label: '√ Pangkat' },
+            { id: 'spbu',     label: '⛽ SPBU' },
         ],
 
         // ── Standar ──
@@ -90,6 +91,17 @@ window.vueApp = new Vue({
             { id: 'akar2',    label: '√x' },
             { id: 'akar3',    label: '∛x' },
             { id: 'akar_n',   label: 'ⁿ√x' },
+        ],
+
+        // ── SPBU (Harga per Liter) ──
+        spbu: {
+            subMode: 'liter',
+            uang: '', hargaPerLiter: '', totalBayar: '', liter: '',
+        },
+        spbuTabs: [
+            { id: 'liter', label: '🛢️ Liter dari Uang' },
+            { id: 'harga', label: '💰 Harga/Liter' },
+            { id: 'total', label: '🧾 Total Bayar' },
         ],
 
         // ── Hasil ──
@@ -191,6 +203,7 @@ window.vueApp = new Vue({
                 pecahan: 'hitungPecahan',
                 persen:  'hitungPersen',
                 pangkat: 'hitungPangkat',
+                spbu:    'hitungSpbu',
             };
             this[map[this.modeAktif]]();
         },
@@ -399,6 +412,64 @@ window.vueApp = new Vue({
             this.tambahRiwayat(teks, total);
         },
 
+        // ── MODE: SPBU (Harga per Liter) ───────────────────────
+        hitungSpbu() {
+            this.hasilMulti = [];
+            const sub = this.spbu.subMode;
+
+            if (sub === 'liter') {
+                const uang  = parseFloat(String(this.spbu.uang).replace(/\./g, '')) || 0;
+                const harga = parseFloat(String(this.spbu.hargaPerLiter).replace(/\./g, '')) || 0;
+                if (harga === 0) { this.hasilKalkulasi = 'Harga/Liter ≠ 0'; return; }
+
+                const literRaw = uang / harga;
+                const literDapat = Math.floor(literRaw * 100) / 100; // pembulatan ke bawah 2 desimal (sesuai dispenser SPBU)
+                const totalTerpakai = literDapat * harga;
+                const kembalian = uang - totalTerpakai;
+
+                this.hasilMulti = [
+                    { label: 'Jumlah Liter:',  nilai: formatDesimal(literDapat, 2) + ' L' },
+                    { label: 'Total Terpakai:', nilai: 'Rp ' + formatRibuan(Math.round(totalTerpakai)) },
+                    { label: 'Kembalian:',     nilai: 'Rp ' + formatRibuan(Math.round(kembalian)) },
+                ];
+                this.tambahRiwayat(
+                    `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(harga)}/L =`,
+                    formatDesimal(literDapat, 2) + ' L'
+                );
+
+            } else if (sub === 'harga') {
+                const totalBayar = parseFloat(String(this.spbu.totalBayar).replace(/\./g, '')) || 0;
+                const liter = parseFloat(String(this.spbu.liter).replace(',', '.')) || 0;
+                if (liter === 0) { this.hasilKalkulasi = 'Jumlah liter ≠ 0'; return; }
+
+                const harga = totalBayar / liter;
+                this.hasilMulti = [
+                    { label: 'Harga per Liter:', nilai: 'Rp ' + formatRibuan(Math.round(harga)) },
+                    { label: 'Jumlah Liter:',     nilai: formatDesimal(liter, 2) + ' L' },
+                    { label: 'Total Bayar:',      nilai: 'Rp ' + formatRibuan(totalBayar) },
+                ];
+                this.tambahRiwayat(
+                    `Rp${formatRibuan(totalBayar)} ÷ ${formatDesimal(liter, 2)} L =`,
+                    'Rp ' + formatRibuan(Math.round(harga)) + '/L'
+                );
+
+            } else if (sub === 'total') {
+                const liter = parseFloat(String(this.spbu.liter).replace(',', '.')) || 0;
+                const harga = parseFloat(String(this.spbu.hargaPerLiter).replace(/\./g, '')) || 0;
+                const total = liter * harga;
+
+                this.hasilMulti = [
+                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(total)) },
+                    { label: 'Jumlah Liter:',     nilai: formatDesimal(liter, 2) + ' L' },
+                    { label: 'Harga per Liter:',  nilai: 'Rp ' + formatRibuan(harga) },
+                ];
+                this.tambahRiwayat(
+                    `${formatDesimal(liter, 2)} L × Rp${formatRibuan(harga)}/L =`,
+                    'Rp ' + formatRibuan(Math.round(total))
+                );
+            }
+        },
+
         // ── Reset ─────────────────────────────────────────────
         resetKalkulator() {
             this.bill = ''; this.bil2 = ''; this.operasi = '+';
@@ -408,6 +479,8 @@ window.vueApp = new Vue({
             this.persen.nilai = ''; this.persen.total = '';
             this.persen.ppnHarga = ''; this.persen.ppnTarif = '11';
             this.pangkat.a = ''; this.pangkat.n = '';
+            this.spbu.uang = ''; this.spbu.hargaPerLiter = '';
+            this.spbu.totalBayar = ''; this.spbu.liter = '';
             this.hasilKalkulasi = 0;
             this.hasilMulti = [];
             if (document.activeElement) document.activeElement.blur();
