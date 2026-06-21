@@ -1,0 +1,447 @@
+/* ============================================================
+   Kalkulator WhatsApp — style.css  v3
+   Mode: Standar | Pecahan | Persen | Pangkat & Akar | SPBU
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    /* Hindari auto-zoom aneh & pastikan tap terasa responsif di mobile */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #dddbd1;
+    padding: 20px;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+}
+
+/* ── Container ─────────────────────────────────────────────── */
+.wa-container {
+    background-color: #ece5dd00;
+    background-image: url('assets/img/whatsapp.jpg');
+    background-repeat: repeat;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.wa-header {
+    background-color: #075e54;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.wa-header-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+.wa-avatar {
+    width: 40px; height: 40px; min-width: 40px;
+    background: #fff; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; font-size: 20px;
+}
+.wa-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.wa-status { font-size: 12px; color: #cfd8dc; }
+
+/* ── Chat Body ─────────────────────────────────────────────── */
+.wa-chat-body { padding: 16px; display: flex; flex-direction: column; }
+
+/* ── Mode Dropdown (Modern) ───────────────────────────────── */
+.mode-select-wrapper {
+    position: relative;
+    margin-bottom: 14px;
+}
+.mode-select {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #17a190 0%, #0b6e60 100%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    padding: 0 44px 0 18px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    text-align: left;
+    letter-spacing: .2px;
+    background-image: none;
+    box-shadow:
+        0 4px 14px rgba(7, 64, 56, 0.32),
+        inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: box-shadow 0.2s ease, transform 0.12s ease, background 0.2s ease;
+}
+.mode-select:hover {
+    box-shadow:
+        0 6px 18px rgba(7, 64, 56, 0.4),
+        inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.mode-select:active { transform: scale(0.99); }
+.mode-select:focus {
+    outline: none;
+    box-shadow:
+        0 0 0 3px rgba(37, 217, 183, 0.35),
+        0 4px 14px rgba(7, 64, 56, 0.32);
+}
+.mode-select option { color: #2b2b2b; background: #fff; font-weight: 600; }
+
+/* Panah custom (dibuat dari border, bukan SVG) — berputar saat fokus/terbuka */
+.mode-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 9px;
+    height: 9px;
+    border-right: 2.5px solid rgba(255,255,255,0.95);
+    border-bottom: 2.5px solid rgba(255,255,255,0.95);
+    border-radius: 0 0 2px 0;
+    transform: translateY(-65%) rotate(45deg);
+    pointer-events: none;
+    transition: transform 0.25s ease;
+}
+.mode-select-wrapper:has(.mode-select:focus) .mode-select-arrow {
+    transform: translateY(-35%) rotate(225deg);
+}
+
+/* ── Petunjuk ──────────────────────────────────────────────── */
+.wa-petunjuk {
+    background: #ffeecd; color: #514633; font-size: 11.5px;
+    padding: 5px 12px; border-radius: 6px;
+    align-self: center; text-align: center; margin: 0 0 14px;
+}
+
+/* ── Mode Hint ─────────────────────────────────────────────── */
+.mode-hint {
+    font-size: 12px; color: #777;
+    text-align: center; margin: -4px 0 12px;
+    background: #f0f0f0; border-radius: 6px; padding: 5px 10px;
+}
+
+/* ── Grid Input (Standar) ──────────────────────────────────── */
+.input-group-op { flex: 0 0 64px; }
+.input-group label { font-size: 11px; color: #128c7e; margin-bottom: 4px; font-weight: 600; }
+
+input, select {
+    padding: 9px 10px; border: 1.5px solid #0a2e29; border-radius: 8px;
+    text-align: right; outline: none; font-size: 16px; width: 100%;
+    height: 46px;
+    -webkit-appearance: none; appearance: none;
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700; letter-spacing: 0.5px;
+    background: linear-gradient(165deg, #0f4a41, #0b3d36);
+    color: #d6fff1;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(255,255,255,0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+input::placeholder { color: #5fa195; opacity: 0.75; font-weight: 600; }
+select {
+    text-align: center; cursor: pointer; font-weight: 800;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2325d9b7' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: center right 10px; padding-right: 24px;
+}
+input:focus, select:focus {
+    border-color: #25d9b7; background: linear-gradient(165deg, #115b50, #0d473e);
+    color: #fff;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.35), 0 0 0 3px rgba(37,217,183,0.25);
+}
+
+/* ── Kalkulator Standar (bebas, seperti kalkulator pada umumnya) ── */
+.std-kalkulator {
+    background: white; padding: 14px; border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 10px;
+    outline: none;
+}
+.std-layar {
+    background: #0b3d36; border-radius: 8px;
+    padding: 14px 16px 12px; margin-bottom: 12px;
+    display: flex; flex-direction: column; align-items: flex-end;
+    min-height: 78px; justify-content: center;
+}
+.std-ekspresi {
+    color: #8fd6c9; font-size: 13px; min-height: 16px;
+    margin-bottom: 4px; white-space: nowrap; overflow-x: auto;
+    max-width: 100%;
+}
+.std-display {
+    color: #fff; font-size: 32px; font-weight: 600;
+    line-height: 1.1; word-break: break-all; text-align: right;
+    width: 100%;
+}
+.std-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.std-key {
+    border: none; border-radius: 8px; background: #f0f0f0; color: #2b2b2b;
+    font-size: 19px; font-weight: 600; cursor: pointer;
+    height: 52px; transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+}
+.std-key:hover { background: #e2e2e2; }
+.std-key:active { transform: scale(0.95); }
+.std-key-fn { background: #d7ecea; color: #0b5e54; }
+.std-key-fn:hover { background: #c5e3df; }
+.std-key-op { background: #128c7e; color: #fff; }
+.std-key-op:hover { background: #0e6e63; }
+.std-key-eq { background: #075e54; color: #fff; }
+.std-key-eq:hover { background: #054a42; }
+
+@media (max-width: 480px) {
+    .std-display { font-size: 28px; }
+    .std-key { height: 48px; font-size: 18px; }
+}
+@media (max-width: 360px) {
+    .std-layar { padding: 12px 12px 10px; }
+    .std-display { font-size: 24px; }
+    .std-keypad { gap: 6px; }
+    .std-key { height: 44px; font-size: 16px; }
+}
+
+
+.single-col-grid {
+    display: flex; flex-direction: column; gap: 12px;
+    background: #fff; padding: 16px; border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 10px;
+    border: 1px solid #f0f0f0;
+}
+
+/* ── Persen / Pangkat / SPBU Sub-Tabs (gaya tab kalkulator standar) ── */
+.persen-mode-tabs, .pangkat-mode-tabs {
+    display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.persen-tab {
+    flex: 1; min-width: 70px;
+    padding: 9px 14px; min-height: 38px;
+    border: 1.5px solid #e2e2e2;
+    border-radius: 20px; background: #fff; color: #555;
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; text-align: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.persen-tab:hover { border-color: #25d9b7; color: #0b6e60; }
+.persen-tab:active { transform: scale(0.95); }
+.persen-tab.active {
+    background: linear-gradient(135deg, #17a190, #0b6e60);
+    color: #fff;
+    border-color: transparent; font-weight: 700;
+    box-shadow: 0 4px 14px rgba(11,110,96,0.35);
+}
+
+/* ── Pecahan Grid (tampilan fraksi asli, seperti di buku/kalkulator) ── */
+.fraksi-grid {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; padding: 16px; border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 10px;
+    border: 1px solid #f0f0f0;
+}
+.fraksi-box { display: flex; flex-direction: column; flex: 1; }
+.fraksi-box label { font-size: 11px; color: #0b6e60; margin-bottom: 6px; font-weight: 700; text-align: center; letter-spacing: .2px; }
+.fraksi-input { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.fraksi-angka {
+    width: 100%; text-align: center !important; font-size: 17px; font-weight: 700; height: 42px;
+    border-radius: 8px;
+}
+/* Garis fraksi sungguhan, menyatukan pembilang & penyebut */
+.fraksi-garis {
+    width: 85%;
+    height: 3px;
+    align-self: center;
+    background: linear-gradient(90deg, transparent, #0b6e60 12%, #0b6e60 88%, transparent);
+    border-radius: 2px;
+    margin: 1px 0;
+}
+.fraksi-op { display: flex; flex-direction: column; align-items: center; flex: 0 0 56px; }
+.fraksi-op label { font-size: 11px; color: #0b6e60; margin-bottom: 6px; font-weight: 700; }
+/* Operator pecahan ditampilkan sebagai tombol bundar khas kalkulator */
+.fraksi-op select {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(150deg, #1cb6a1, #0b6e60);
+    color: #fff;
+    border: none;
+    font-size: 19px;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(11,110,96,0.4), inset 0 -2px 4px rgba(0,0,0,0.15);
+    background-image: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fraksi-op select:hover { transform: scale(1.08); }
+.fraksi-op select:focus {
+    background: linear-gradient(150deg, #1cb6a1, #0b6e60);
+    box-shadow: 0 4px 10px rgba(11,110,96,0.4), 0 0 0 3px rgba(37,217,183,0.35);
+}
+
+/* ── Tombol Aksi ───────────────────────────────────────────── */
+.wa-action-buttons { display: flex; gap: 10px; margin-bottom: 16px; margin-top: 4px; }
+.wa-action-buttons button {
+    flex: 1; padding: 13px; min-height: 46px; border: none; border-radius: 6px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    -webkit-tap-highlight-color: transparent;
+}
+.wa-action-buttons button:active { transform: scale(0.97); }
+.btn-hitung { background: #128c7e; color: white; }
+.btn-hitung:hover { background: #0b695e; }
+.btn-reset { background: #fff; color: #555; border: 1px solid #e2e2e2; }
+.btn-reset:hover { background: #f5f5f5; }
+
+/* ── Balon Hasil ───────────────────────────────────────────── */
+.wa-bubble-container { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+.wa-bubble-hasil {
+    background: #dcf8c6; padding: 10px 15px;
+    border-radius: 8px 0 8px 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    max-width: 85%; min-width: 140px;
+    position: relative; text-align: right;
+}
+.wa-label-hasil { font-size: 11px; color: #557a3a; display: block; text-align: left; font-weight: 600; margin-bottom: 4px; }
+.wa-bubble-hasil h1 { margin: 4px 0 18px; font-size: 26px; color: #303030; word-break: break-all; }
+
+/* Hasil multi-baris (persen, pecahan) */
+.hasil-multi-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; padding: 3px 0;
+}
+.hasil-multi-label { font-size: 11px; color: #557a3a; font-weight: 600; white-space: nowrap; }
+.hasil-multi-val { font-size: 16px; font-weight: 700; color: #1a1a1a; text-align: right; }
+.wa-bubble-hasil .hasil-multi-row:last-child { margin-bottom: 14px; }
+
+.wa-time { font-size: 10px; color: #72965a; position: absolute; bottom: 5px; right: 8px; }
+
+/* ── Riwayat ───────────────────────────────────────────────── */
+.wa-history-section {
+    border-top: 1px dashed #ccc; padding-top: 14px;
+    display: flex; flex-direction: column;
+}
+.wa-history-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: #4A4A4A; margin-bottom: 8px; font-weight: 600;
+}
+.wa-history-title-wrapper { display: flex; align-items: center; gap: 8px; }
+.btn-toggle-history {
+    background: none; border: none; color: #128c7e;
+    cursor: pointer; font-size: 11px; font-weight: bold;
+}
+.btn-toggle-history:hover { text-decoration: underline; }
+.btn-clear-all {
+    background: none; border: none; color: #d9534f;
+    cursor: pointer; font-size: 12px; font-weight: bold;
+}
+.btn-clear-all:hover { text-decoration: underline; }
+
+.wa-history-list {
+    max-height: 160px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px; padding-right: 4px;
+    scrollbar-width: thin; scrollbar-color: #ccc transparent;
+}
+.wa-bubble-history {
+    background: #fff; padding: 7px 28px 7px 10px;
+    border-radius: 0 8px 8px 8px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    align-self: flex-start; max-width: 90%;
+    position: relative; font-size: 13px;
+    animation: fadeIn 0.25s ease;
+}
+.wa-history-text { color: #555; }
+.wa-history-total { color: #000; }
+.wa-history-time { font-size: 9px; color: #999; margin-left: 6px; vertical-align: bottom; }
+.btn-delete-item {
+    position: absolute; right: 0; top: 0;
+    background: none; border: none; color: #bbb; font-size: 16px; cursor: pointer;
+    padding: 8px 10px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-delete-item:hover { color: #ff3333; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive Mobile ─────────────────────────────────────── */
+@media (max-width: 480px) {
+    body { padding: 0; align-items: flex-start; background: #ece5dd; }
+    .wa-container { border-radius: 0; min-height: 100vh; min-height: 100dvh; max-width: 100%; }
+    .wa-chat-body { flex: 1; padding: 12px; }
+
+    .wa-header { padding: 10px 12px; }
+    .wa-header h3 { font-size: 14.5px; }
+    .wa-status { font-size: 11px; }
+    .wa-avatar { width: 36px; height: 36px; min-width: 36px; font-size: 18px; }
+
+    /* Standar: tumpuk vertikal, operator full width di tengah */
+    .input-group-op { flex: 1; }
+    .input-group-op select { max-width: 120px; margin: 0 auto; }
+
+    .mode-select { font-size: 13px; padding: 0 38px 0 14px; height: 46px; }
+    .mode-select-arrow { right: 15px; }
+
+    /* Pecahan: jaga agar dua kotak pecahan + operator tetap proporsional,
+       tapi mengecilkan padding/gap agar tidak overflow di layar sempit */
+    .fraksi-grid { padding: 12px; gap: 8px; }
+    .fraksi-op { flex: 0 0 48px; }
+    .fraksi-angka { font-size: 15px; height: 38px; }
+    .fraksi-op select { width: 42px; height: 42px; font-size: 16px; }
+
+    .persen-tab, .pangkat-mode-tabs .persen-tab { font-size: 11px; padding: 6px 6px; min-width: 64px; }
+
+    .single-col-grid { padding: 12px; }
+
+    .wa-bubble-hasil h1 { font-size: 22px; }
+    .hasil-multi-val { font-size: 15px; }
+
+    .wa-action-buttons button { font-size: 14px; padding: 12px; }
+}
+
+/* Layar sangat sempit (mis. iPhone SE, ~360px atau kurang) */
+@media (max-width: 360px) {
+    .wa-chat-body { padding: 10px; }
+    .fraksi-grid { gap: 5px; }
+    .fraksi-op { flex: 0 0 42px; }
+    .fraksi-garis { width: 80%; }
+    .fraksi-angka { font-size: 14px; height: 36px; padding: 4px; }
+    .fraksi-op select { width: 38px; height: 38px; font-size: 14px; }
+    .persen-tab { font-size: 10.5px; padding: 6px 4px; min-width: 56px; }
+    .wa-bubble-hasil h1 { font-size: 19px; }
+    .wa-bubble-hasil { min-width: 0; }
+    .hasil-multi-row { gap: 8px; }
+    .mode-select { font-size: 12.5px; height: 44px; }
+}
+
+/* Layar pendek (landscape ponsel / area terbatas tinggi) */
+@media (max-height: 600px) and (orientation: landscape) {
+    body { align-items: flex-start; }
+    .wa-history-list { max-height: 100px; }
+}
+
+/* ── Standalone PWA ────────────────────────────────────────── */
+@media (display-mode: standalone) {
+    body { padding: 0; background: #075e54; align-items: flex-start; }
+    .wa-container { border-radius: 0; min-height: 100vh; min-height: 100dvh; max-width: 100%; }
+    .wa-header {
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+    }
+}
