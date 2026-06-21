@@ -253,6 +253,65 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
+            <!-- MODE: SPBU (HARGA PER LITER) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div v-if="modeAktif === 'spbu'">
+                <div class="persen-mode-tabs">
+                    <button type="button" v-for="st in spbuTabs" :key="st.id"
+                        :class="['persen-tab', { active: spbu.subMode === st.id }]"
+                        @click="spbu.subMode = st.id; resetHasil()">
+                        {{ st.label }}
+                    </button>
+                </div>
+
+                <!-- Liter dari Uang -->
+                <div v-if="spbu.subMode === 'liter'" class="single-col-grid">
+                    <div class="input-group">
+                        <label>Uang yang Dibawa (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="spbu.uang"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="50.000">
+                    </div>
+                    <div class="input-group">
+                        <label>Harga BBM per Liter (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                    </div>
+                </div>
+
+                <!-- Hitung Harga per Liter -->
+                <div v-if="spbu.subMode === 'harga'" class="single-col-grid">
+                    <div class="input-group">
+                        <label>Total Bayar di Kasir (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="spbu.totalBayar"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="100.000">
+                    </div>
+                    <div class="input-group">
+                        <label>Jumlah Liter Terisi</label>
+                        <input type="text" inputmode="decimal" v-model="spbu.liter"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                    </div>
+                </div>
+
+                <!-- Hitung Total Bayar -->
+                <div v-if="spbu.subMode === 'total'" class="single-col-grid">
+                    <div class="input-group">
+                        <label>Jumlah Liter yang Diisi</label>
+                        <input type="text" inputmode="decimal" v-model="spbu.liter"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                    </div>
+                    <div class="input-group">
+                        <label>Harga BBM per Liter (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
+                            @keydown.enter="hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                    </div>
+                </div>
+
+                <p class="mode-hint" v-if="spbu.subMode === 'liter'">💡 Berapa liter BBM yang didapat dari sejumlah uang</p>
+                <p class="mode-hint" v-if="spbu.subMode === 'harga'">💡 Hitung harga BBM per liter dari total bayar & jumlah liter terisi</p>
+                <p class="mode-hint" v-if="spbu.subMode === 'total'">💡 Hitung total yang harus dibayar di kasir SPBU</p>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
             <!-- TOMBOL AKSI -->
             <!-- ═══════════════════════════════════════════════ -->
             <div class="wa-action-buttons">
