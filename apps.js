@@ -1,7 +1,7 @@
 // ============================================================
-//  Kalkulator WhatsApp — apps.js  v5
-//  Mode: Standar | Persen | Pangkat & Akar | SPBU | KWH Listrik
-//  Sound Effects & History with Dropdown
+//  Kalkulator WhatsApp — apps.js  v6
+//  Mode: Standar | Persen | SPBU | KWH Listrik | Riwayat
+//  Sound Effects & History Tab
 // ============================================================
 
 
@@ -76,9 +76,9 @@ window.vueApp = new Vue({
         tabs: [
             { id: 'standar',  label: '🔢 Standar' },
             { id: 'persen',   label: '% Persen'  },
-            { id: 'pangkat',  label: '√ Pangkat' },
             { id: 'spbu',     label: '⛽ SPBU' },
             { id: 'kwh',      label: '⚡ KWH Listrik' },
+            { id: 'riwayat',  label: '🕒 Riwayat' },
         ],
 
         // ── Standar (kalkulator bebas seperti kalkulator pada umumnya) ──
@@ -105,17 +105,6 @@ window.vueApp = new Vue({
         ppnModeTabs: [
             { id: 'tambah', label: 'Tambah PPN' },
             { id: 'cari',   label: 'Cari DPP' },
-        ],
-
-        // ── Pangkat & Akar ──
-        pangkat: { subMode: 'kuadrat', a: '', n: '' },
-        pangkatTabs: [
-            { id: 'kuadrat',  label: 'x²' },
-            { id: 'kubik',    label: 'x³' },
-            { id: 'pangkat_n',label: 'xⁿ' },
-            { id: 'akar2',    label: '√x' },
-            { id: 'akar3',    label: '∛x' },
-            { id: 'akar_n',   label: 'ⁿ√x' },
         ],
 
         // ── SPBU (Harga per Liter) ──
@@ -170,26 +159,6 @@ window.vueApp = new Vue({
             if (typeof h === 'number') return formatDesimal(h);
             return h;
         },
-
-        labelPangkatInput() {
-            const m = this.pangkat.subMode;
-            if (m === 'akar2') return 'Nilai (√x)';
-            if (m === 'akar3') return 'Nilai (∛x)';
-            return 'Nilai Dasar';
-        },
-
-        hintPangkat() {
-            const m = this.pangkat.subMode;
-            const hints = {
-                kuadrat: '💡 Contoh: 5² = 25',
-                kubik:   '💡 Contoh: 3³ = 27',
-                pangkat_n: '💡 Contoh: 2 pangkat 10 = 1.024',
-                akar2:   '💡 Contoh: √144 = 12',
-                akar3:   '💡 Contoh: ∛27 = 3',
-                akar_n:  '💡 Contoh: akar ke-4 dari 81 = 3',
-            };
-            return hints[m] || '';
-        },
     },
 
     methods: {
@@ -198,105 +167,131 @@ window.vueApp = new Vue({
             soundManager.play(soundName);
         },
 
-        // ── Navigasi Tab ──────────────────────────────────────
-        gantiMode(id) {
-            this.modeAktif = id;
-            this.resetHasil();
+        // ── Ganti Mode ────────────────────────────────────────
+        gantiMode(newMode) {
+            this.modeAktif = newMode;
         },
+
+        // ── Hitung mode aktif ──────────────────────────────────
+        hitungAktif() {
+            const methodMap = {
+                persen: 'hitungPersen',
+                spbu: 'hitungSpbu',
+                kwh: 'hitungKwh',
+            };
+            const method = methodMap[this.modeAktif];
+            if (method && typeof this[method] === 'function') {
+                this[method]();
+            }
+        },
+
+        // ── Reset Kalkulator ───────────────────────────────────
+        resetKalkulator() {
+            if (this.modeAktif === 'standar') {
+                this.stdClear();
+            } else if (this.modeAktif === 'persen') {
+                this.resetPersen();
+            } else if (this.modeAktif === 'spbu') {
+                this.resetSpbu();
+            } else if (this.modeAktif === 'kwh') {
+                this.resetKwh();
+            }
+        },
+
         resetHasil() {
             this.hasilKalkulasi = 0;
             this.hasilMulti = [];
         },
 
-        // ── Dispatcher Tombol Hitung ──────────────────────────
-        hitungAktif() {
-            const map = {
-                standar: 'stdEquals',
-                persen:  'hitungPersen',
-                pangkat: 'hitungPangkat',
-                spbu:    'hitungSpbu',
-                kwh:     'hitungKwh',
-            };
-            this[map[this.modeAktif]]();
-        },
-
-        // ── Simpan Riwayat ────────────────────────────────────
-        simpanKeStorage() {
-            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
-        },
+        // ── Riwayat Kalkulasi ──────────────────────────────────
         tambahRiwayat(teks, total) {
+            const now = new Date();
+            const jam = String(now.getHours()).padStart(2, '0');
+            const menit = String(now.getMinutes()).padStart(2, '0');
+            const waktu = `${jam}:${menit}`;
+
             this.riwayat.unshift({
                 id: Date.now(),
-                teks,
-                total,
-                waktu: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                teks: teks,
+                total: total,
+                waktu: waktu,
             });
-            this.simpanKeStorage();
-            this.tampilkanRiwayat = true;
+
+            // Simpan ke localStorage
+            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
         },
 
-        // ── MODE: STANDAR (kalkulator bebas) ──────────────────
-        simbolOpStandar(op) { return { '+':'+', '-':'−', '*':'×', '/':'÷' }[op] || op; },
-
-        hitungOpStandar(a, b, op) {
-            switch (op) {
-                case '+': return a + b;
-                case '-': return a - b;
-                case '*': return a * b;
-                case '/': return b !== 0 ? a / b : NaN;
-                default:  return b;
+        hapusSatu(id) {
+            const idx = this.riwayat.findIndex(x => x.id === id);
+            if (idx > -1) {
+                this.riwayat.splice(idx, 1);
+                localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
             }
         },
 
-        formatHasilStandar(n) {
-            if (!isFinite(n)) return 'Error';
-            // Buang sisa pembulatan floating-point, batasi 10 digit desimal
-            const s = parseFloat(n.toFixed(10)).toString();
-            return s;
+        hapusSemua() {
+            if (confirm('Hapus semua riwayat kalkulasi?')) {
+                this.riwayat = [];
+                localStorage.removeItem('wa_kalkulator_riwayat');
+            }
         },
 
-        // Input digit 0-9
+        // ════════════════════════════════════════════════════════
+        // MODE: STANDAR
+        // ════════════════════════════════════════════════════════
+
         stdDigit(d) {
-            if (this.standar.display === 'Error') this.stdClear();
             if (this.standar.overwrite) {
                 this.standar.display = d;
                 this.standar.overwrite = false;
             } else {
-                if (this.standar.display.replace('-', '').replace('.', '').length >= 15) return;
-                this.standar.display = this.standar.display === '0' ? d : this.standar.display + d;
+                if (this.standar.display.length >= 15) return;
+                this.standar.display += d;
             }
         },
 
-        // Input titik desimal
         stdDecimal() {
-            if (this.standar.display === 'Error') this.stdClear();
             if (this.standar.overwrite) {
-                this.standar.display = '0.';
+                this.standar.display = '0,';
                 this.standar.overwrite = false;
-            } else if (!this.standar.display.includes('.')) {
-                this.standar.display += '.';
+            } else if (!this.standar.display.includes(',')) {
+                this.standar.display += ',';
             }
         },
 
-        // Pilih operator (+, -, *, /) — mendukung hitungan berantai
         stdOperator(op) {
-            if (this.standar.display === 'Error') this.stdClear();
             const current = parseFloat(this.standar.display) || 0;
-            if (this.standar.operator && !this.standar.overwrite) {
+            if (this.standar.stored !== null && !this.standar.overwrite) {
                 const hasil = this.hitungOpStandar(this.standar.stored, current, this.standar.operator);
-                this.standar.stored = hasil;
                 this.standar.display = this.formatHasilStandar(hasil);
-            } else {
-                this.standar.stored = current;
             }
+            this.standar.stored = parseFloat(this.standar.display) || 0;
             this.standar.operator = op;
             this.standar.overwrite = true;
             this.standar.exprText = `${formatRibuan(this.standar.stored)} ${this.simbolOpStandar(op)}`;
         },
 
-        // Tombol "="
+        simbolOpStandar(op) {
+            const map = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+            return map[op] || op;
+        },
+
+        hitungOpStandar(a, b, op) {
+            switch(op) {
+                case '+': return a + b;
+                case '-': return a - b;
+                case '*': return a * b;
+                case '/': return b !== 0 ? a / b : NaN;
+                default: return b;
+            }
+        },
+
+        formatHasilStandar(nilai) {
+            const s = nilai.toFixed(10);
+            return parseFloat(s).toString().replace('.', ',');
+        },
+
         stdEquals() {
-            if (this.standar.operator === null || this.standar.display === 'Error') return;
             const current = parseFloat(this.standar.display) || 0;
             const a = this.standar.stored;
             const op = this.standar.operator;
@@ -370,7 +365,9 @@ window.vueApp = new Vue({
             else if (k === '%') { this.stdPercent(); }
         },
 
-        // ── MODE: PERSEN ──────────────────────────────────────
+        // ════════════════════════════════════════════════════════
+        // MODE: PERSEN
+        // ════════════════════════════════════════════════════════
         hitungPersen() {
             this.hasilMulti = [];
             const sub = this.persen.subMode;
@@ -400,22 +397,22 @@ window.vueApp = new Vue({
                     { label: 'Dari total:', nilai: formatRibuan(total) },
                 ];
                 this.tambahRiwayat(
-                    `${formatRibuan(nilai)} dari ${formatRibuan(total)} =`,
+                    `${formatRibuan(nilai)} dari Rp${formatRibuan(total)} =`,
                     formatDesimal(pct) + '%'
                 );
 
             } else if (sub === 'naik') {
                 const harga = parseFloat(this.persen.harga.replace(/\./g,'')) || 0;
                 const pct   = parseFloat(this.persen.pct) || 0;
-                const delta = harga * Math.abs(pct) / 100;
-                const hasil = pct >= 0 ? harga + delta : harga - delta;
-                const label = pct >= 0 ? 'Naik menjadi:' : 'Turun menjadi:';
+                const delta = harga * pct / 100;
+                const hasil = harga + delta;
                 this.hasilMulti = [
-                    { label, nilai: 'Rp ' + formatRibuan(hasil) },
-                    { label: 'Selisih:', nilai: 'Rp ' + formatRibuan(delta) },
+                    { label: 'Nilai Baru:', nilai: 'Rp ' + formatRibuan(hasil) },
+                    { label: 'Perubahan:',  nilai: 'Rp ' + formatRibuan(delta) },
+                    { label: 'Naik/Turun:', nilai: (pct >= 0 ? '+' : '') + pct + '%' },
                 ];
                 this.tambahRiwayat(
-                    `${pct >= 0 ? '+' : ''}${pct}% dari Rp${formatRibuan(harga)} =`,
+                    `Rp${formatRibuan(harga)} ${pct >= 0 ? 'naik' : 'turun'} ${Math.abs(pct)}% =`,
                     'Rp ' + formatRibuan(hasil)
                 );
 
@@ -424,207 +421,144 @@ window.vueApp = new Vue({
                 const tarif = parseFloat(this.persen.ppnTarif) || 0;
 
                 if (this.persen.ppnMode === 'tambah') {
-                    // Harga dimasukkan = DPP (belum termasuk PPN)
-                    const dpp     = harga;
-                    const nilaiPpn = dpp * tarif / 100;
-                    const total   = dpp + nilaiPpn;
+                    const ppn = harga * tarif / 100;
+                    const total = harga + ppn;
                     this.hasilMulti = [
-                        { label: 'DPP:',          nilai: 'Rp ' + formatRibuan(dpp) },
-                        { label: `PPN (${tarif}%):`, nilai: 'Rp ' + formatRibuan(nilaiPpn) },
-                        { label: 'Harga + PPN:',  nilai: 'Rp ' + formatRibuan(total) },
+                        { label: 'Harga:',      nilai: 'Rp ' + formatRibuan(harga) },
+                        { label: 'PPN:',        nilai: 'Rp ' + formatRibuan(ppn) },
+                        { label: 'Total + PPN:', nilai: 'Rp ' + formatRibuan(total) },
                     ];
                     this.tambahRiwayat(
-                        `PPN ${tarif}% dari Rp${formatRibuan(dpp)} =`,
+                        `Rp${formatRibuan(harga)} + PPN ${tarif}% =`,
                         'Rp ' + formatRibuan(total)
                     );
                 } else {
-                    // Harga dimasukkan = sudah termasuk PPN, cari DPP
-                    const totalHarga = harga;
-                    const dpp        = tarif !== -100 ? totalHarga / (1 + tarif / 100) : 0;
-                    const nilaiPpn   = totalHarga - dpp;
+                    const faktor = 1 + tarif / 100;
+                    const dpp = harga / faktor;
+                    const ppn = harga - dpp;
                     this.hasilMulti = [
-                        { label: 'Harga Termasuk PPN:', nilai: 'Rp ' + formatRibuan(totalHarga) },
-                        { label: 'DPP (Harga Dasar):',  nilai: 'Rp ' + formatRibuan(dpp) },
-                        { label: `PPN (${tarif}%):`,    nilai: 'Rp ' + formatRibuan(nilaiPpn) },
+                        { label: 'Total Harga:',nilai: 'Rp ' + formatRibuan(harga) },
+                        { label: 'DPP:',        nilai: 'Rp ' + formatRibuan(dpp) },
+                        { label: 'PPN:',        nilai: 'Rp ' + formatRibuan(ppn) },
                     ];
                     this.tambahRiwayat(
-                        `DPP dari Rp${formatRibuan(totalHarga)} (PPN ${tarif}%) =`,
+                        `Cari DPP dari Rp${formatRibuan(harga)} (PPN ${tarif}%) =`,
                         'Rp ' + formatRibuan(dpp)
                     );
                 }
             }
         },
 
-        // ── MODE: PANGKAT & AKAR ──────────────────────────────
-        hitungPangkat() {
-            const a = parseFloat(this.pangkat.a);
-            const n = parseFloat(this.pangkat.n);
-            if (isNaN(a)) { this.hasilKalkulasi = 'Masukkan nilai'; return; }
-            let hasil, teks;
-            const sub = this.pangkat.subMode;
-
-            switch (sub) {
-                case 'kuadrat':
-                    hasil = a * a; teks = `${a}² =`; break;
-                case 'kubik':
-                    hasil = a * a * a; teks = `${a}³ =`; break;
-                case 'pangkat_n':
-                    if (isNaN(n)) { this.hasilKalkulasi = 'Masukkan pangkat'; return; }
-                    hasil = Math.pow(a, n); teks = `${a}^${n} =`; break;
-                case 'akar2':
-                    if (a < 0) { this.hasilKalkulasi = 'Nilai ≥ 0'; return; }
-                    hasil = Math.sqrt(a); teks = `√${a} =`; break;
-                case 'akar3':
-                    hasil = Math.cbrt(a); teks = `∛${a} =`; break;
-                case 'akar_n':
-                    if (isNaN(n) || n === 0) { this.hasilKalkulasi = 'Masukkan akar ke-'; return; }
-                    hasil = Math.pow(Math.abs(a), 1/n) * (a < 0 && n%2 !== 0 ? -1 : 1);
-                    teks = `${n}√${a} =`; break;
-                default:
-                    hasil = 0; teks = '?';
-            }
-
-            this.hasilKalkulasi = hasil;
+        resetPersen() {
+            this.persen = {
+                subMode: 'diskon', harga: '', pct: '', nilai: '', total: '',
+                ppnMode: 'tambah', ppnHarga: '', ppnTarif: '11',
+            };
+            this.hasilKalkulasi = 0;
             this.hasilMulti = [];
-            const total = typeof hasil === 'number' ? formatDesimal(hasil) : hasil;
-            this.tambahRiwayat(teks, total);
         },
 
-        // ── MODE: SPBU (Harga per Liter) ───────────────────────
+        // ════════════════════════════════════════════════════════
+        // MODE: SPBU
+        // ════════════════════════════════════════════════════════
         hitungSpbu() {
             this.hasilMulti = [];
             const sub = this.spbu.subMode;
 
             if (sub === 'liter') {
-                const uang  = parseFloat(String(this.spbu.uang).replace(/\./g, '')) || 0;
-                const harga = parseFloat(String(this.spbu.hargaPerLiter).replace(/\./g, '')) || 0;
-                if (harga === 0) { this.hasilKalkulasi = 'Harga/Liter ≠ 0'; return; }
-
-                const literRaw = uang / harga;
-                const literDapat = Math.floor(literRaw * 100) / 100; // pembulatan ke bawah 2 desimal (sesuai dispenser SPBU)
-                const totalTerpakai = literDapat * harga;
-                const kembalian = uang - totalTerpakai;
-
+                const uang = parseFloat(this.spbu.uang.replace(/\./g,'')) || 0;
+                const harga = parseFloat(this.spbu.hargaPerLiter.replace(/\./g,'')) || 0;
+                if (harga === 0) { this.hasilKalkulasi = 'Harga ≠ 0'; return; }
+                const liter = uang / harga;
                 this.hasilMulti = [
-                    { label: 'Jumlah Liter:',  nilai: formatDesimal(literDapat, 2) + ' L' },
-                    { label: 'Total Terpakai:', nilai: 'Rp ' + formatRibuan(Math.round(totalTerpakai)) },
-                    { label: 'Kembalian:',     nilai: 'Rp ' + formatRibuan(Math.round(kembalian)) },
+                    { label: 'Uang:', nilai: 'Rp ' + formatRibuan(uang) },
+                    { label: 'Liter:', nilai: formatDesimal(liter) + ' L' },
                 ];
                 this.tambahRiwayat(
                     `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(harga)}/L =`,
-                    formatDesimal(literDapat, 2) + ' L'
+                    formatDesimal(liter) + ' L'
                 );
 
             } else if (sub === 'harga') {
-                const totalBayar = parseFloat(String(this.spbu.totalBayar).replace(/\./g, '')) || 0;
-                const liter = parseFloat(String(this.spbu.liter).replace(',', '.')) || 0;
-                if (liter === 0) { this.hasilKalkulasi = 'Jumlah liter ≠ 0'; return; }
-
-                const harga = totalBayar / liter;
+                const total = parseFloat(this.spbu.totalBayar.replace(/\./g,'')) || 0;
+                const liter = parseFloat(this.spbu.liter.replace(/\./g,'')) || 0;
+                if (liter === 0) { this.hasilKalkulasi = 'Liter ≠ 0'; return; }
+                const harga = total / liter;
                 this.hasilMulti = [
-                    { label: 'Harga per Liter:', nilai: 'Rp ' + formatRibuan(Math.round(harga)) },
-                    { label: 'Jumlah Liter:',     nilai: formatDesimal(liter, 2) + ' L' },
-                    { label: 'Total Bayar:',      nilai: 'Rp ' + formatRibuan(totalBayar) },
+                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(total) },
+                    { label: 'Harga/L:', nilai: 'Rp ' + formatDesimal(harga) },
                 ];
                 this.tambahRiwayat(
-                    `Rp${formatRibuan(totalBayar)} ÷ ${formatDesimal(liter, 2)} L =`,
-                    'Rp ' + formatRibuan(Math.round(harga)) + '/L'
+                    `Rp${formatRibuan(total)} ÷ ${formatDesimal(liter)}L =`,
+                    'Rp ' + formatDesimal(harga)
                 );
 
             } else if (sub === 'total') {
-                const liter = parseFloat(String(this.spbu.liter).replace(',', '.')) || 0;
-                const harga = parseFloat(String(this.spbu.hargaPerLiter).replace(/\./g, '')) || 0;
+                const liter = parseFloat(this.spbu.liter.replace(/\./g,'')) || 0;
+                const harga = parseFloat(this.spbu.hargaPerLiter.replace(/\./g,'')) || 0;
                 const total = liter * harga;
-
                 this.hasilMulti = [
-                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(total)) },
-                    { label: 'Jumlah Liter:',     nilai: formatDesimal(liter, 2) + ' L' },
-                    { label: 'Harga per Liter:',  nilai: 'Rp ' + formatRibuan(harga) },
+                    { label: 'Liter:', nilai: formatDesimal(liter) + ' L' },
+                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(total) },
                 ];
                 this.tambahRiwayat(
-                    `${formatDesimal(liter, 2)} L × Rp${formatRibuan(harga)}/L =`,
-                    'Rp ' + formatRibuan(Math.round(total))
+                    `${formatDesimal(liter)}L × Rp${formatRibuan(harga)}/L =`,
+                    'Rp ' + formatRibuan(total)
                 );
             }
         },
 
-        // ── MODE: KWH LISTRIK (Prabayar/Pascabayar) ─────────────
+        resetSpbu() {
+            this.spbu = { subMode: 'liter', uang: '', hargaPerLiter: '', totalBayar: '', liter: '' };
+            this.hasilKalkulasi = 0;
+            this.hasilMulti = [];
+        },
+
+        // ════════════════════════════════════════════════════════
+        // MODE: KWH LISTRIK
+        // ════════════════════════════════════════════════════════
         hitungKwh() {
             this.hasilMulti = [];
-            const awal = parseFloat(String(this.kwh.awalMeter).replace(',', '.')) || 0;
-            const akhir = parseFloat(String(this.kwh.akhirMeter).replace(',', '.')) || 0;
-            const tarif = parseFloat(String(this.kwh.tarifPerKwh).replace(/\./g, '')) || 0;
+            const tipe = this.kwh.tipe;
 
-            if (tarif === 0) { 
-                this.hasilKalkulasi = 'Tarif per KWH ≠ 0'; 
-                return; 
-            }
-
-            if (this.kwh.tipe === 'prabayar') {
-                // Untuk prabayar: input adalah uang yang dibayarkan, hitung berapa KWH yang didapat
-                const uang = awal; // awalMeter digunakan untuk input uang
+            if (tipe === 'prabayar') {
+                const uang = parseFloat(this.kwh.awalMeter.replace(/\./g,'')) || 0;
+                const tarif = parseFloat(this.kwh.tarifPerKwh.replace(/\./g,'')) || 0;
+                if (tarif === 0) { this.hasilKalkulasi = 'Tarif ≠ 0'; return; }
                 const kwh = uang / tarif;
-                const totalBayar = kwh * tarif;
-                const kembalian = uang - totalBayar;
-
                 this.hasilMulti = [
-                    { label: 'KWH Didapat:',    nilai: formatDesimal(kwh, 2) + ' KWH' },
-                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(totalBayar)) },
-                    { label: 'Kembalian:',       nilai: 'Rp ' + formatRibuan(Math.round(kembalian)) },
+                    { label: 'Uang Prabayar:', nilai: 'Rp ' + formatRibuan(uang) },
+                    { label: 'Tarif/KWH:',    nilai: 'Rp ' + formatRibuan(tarif) },
+                    { label: 'Total KWH:',    nilai: formatDesimal(kwh) + ' KWH' },
                 ];
                 this.tambahRiwayat(
                     `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(tarif)}/KWH =`,
-                    formatDesimal(kwh, 2) + ' KWH'
+                    formatDesimal(kwh) + ' KWH'
                 );
-            } else {
-                // Untuk pascabayar: hitung pemakaian dari selisih meter
-                if (akhir < awal) {
-                    this.hasilKalkulasi = 'Meter akhir harus ≥ meter awal';
-                    return;
-                }
 
-                const pemakaian = akhir - awal;
-                const totalBayar = pemakaian * tarif;
-
+            } else if (tipe === 'pascabayar') {
+                const awal = parseFloat(this.kwh.awalMeter.replace(/\./g,'')) || 0;
+                const akhir = parseFloat(this.kwh.akhirMeter.replace(/\./g,'')) || 0;
+                const tarif = parseFloat(this.kwh.tarifPerKwh.replace(/\./g,'')) || 0;
+                const selisih = akhir - awal;
+                const bayar = selisih * tarif;
                 this.hasilMulti = [
-                    { label: 'Pemakaian KWH:',   nilai: formatDesimal(pemakaian, 2) + ' KWH' },
-                    { label: 'Tarif per KWH:',   nilai: 'Rp ' + formatRibuan(tarif) },
-                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(totalBayar)) },
+                    { label: 'Meter Awal:',  nilai: formatDesimal(awal) + ' KWH' },
+                    { label: 'Meter Akhir:', nilai: formatDesimal(akhir) + ' KWH' },
+                    { label: 'Terpakai:',    nilai: formatDesimal(selisih) + ' KWH' },
+                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(bayar) },
                 ];
                 this.tambahRiwayat(
-                    `${formatDesimal(pemakaian, 2)} KWH × Rp${formatRibuan(tarif)} =`,
-                    'Rp ' + formatRibuan(Math.round(totalBayar))
+                    `${formatDesimal(akhir)} - ${formatDesimal(awal)} = ${formatDesimal(selisih)} KWH × Rp${formatRibuan(tarif)}/KWH =`,
+                    'Rp ' + formatRibuan(bayar)
                 );
             }
         },
 
-        // ── Reset ─────────────────────────────────────────────
-        resetKalkulator() {
-            this.standar = { display: '0', stored: null, operator: null, overwrite: true, exprText: '' };
-            this.persen.harga = ''; this.persen.pct = '';
-            this.persen.nilai = ''; this.persen.total = '';
-            this.persen.ppnHarga = ''; this.persen.ppnTarif = '11';
-            this.pangkat.a = ''; this.pangkat.n = '';
-            this.spbu.uang = ''; this.spbu.hargaPerLiter = '';
-            this.spbu.totalBayar = ''; this.spbu.liter = '';
-            this.kwh.awalMeter = ''; this.kwh.akhirMeter = ''; this.kwh.tarifPerKwh = '';
+        resetKwh() {
+            this.kwh = { tipe: 'prabayar', awalMeter: '', akhirMeter: '', tarifPerKwh: '' };
             this.hasilKalkulasi = 0;
             this.hasilMulti = [];
-            if (document.activeElement) document.activeElement.blur();
         },
-
-        // ── Riwayat ───────────────────────────────────────────
-        toggleRiwayat() { this.tampilkanRiwayat = !this.tampilkanRiwayat; },
-        hapusSatu(id) {
-            this.riwayat = this.riwayat.filter(i => i.id !== id);
-            this.simpanKeStorage();
-        },
-        hapusSemua() {
-            this.riwayat = [];
-            localStorage.removeItem('wa_kalkulator_riwayat');
-        },
-
-        // ── Helper expose ke template ─────────────────────────
-        formatRibuan(v) { return formatRibuan(v); },
     }
 });

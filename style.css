@@ -1,7 +1,7 @@
 /* ============================================================
-   Kalkulator WhatsApp — style.css  v5
-   Mode: Standar | Persen | Pangkat & Akar | SPBU | KWH Listrik
-   WhatsApp Dropdown History
+   Kalkulator WhatsApp — style.css  v6
+   Mode: Standar | Persen | SPBU | KWH Listrik | Riwayat
+   WhatsApp History Tab View
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -692,10 +692,66 @@ input:focus, select:focus {
     .mode-select { font-size: 12.5px; height: 44px; }
 }
 
+/* ── History Tab (Full View) ───────────────────────────────── */
+.wa-history-full {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.wa-history-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8a8a8a;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.wa-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #dcd8d5;
+}
+
+.wa-history-count {
+    font-size: 14px;
+    color: #75757a;
+    font-weight: 500;
+}
+
+.btn-clear-all {
+    background: none;
+    border: none;
+    color: #075e54;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.btn-clear-all:active {
+    color: #0a4030;
+}
+
+.wa-history-full-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 450px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+}
+
 /* Layar pendek (landscape ponsel / area terbatas tinggi) */
 @media (max-height: 600px) and (orientation: landscape) {
     body { align-items: flex-start; }
     .wa-history-list { max-height: 120px; }
+    .wa-history-full-list { max-height: 200px; }
 }
 
 /* ── Standalone PWA ────────────────────────────────────────── */

@@ -139,7 +139,7 @@
                     </div>
                     <div class="single-col-grid">
                         <div class="input-group">
-                            <label>{{ persen.ppnMode === 'tambah' ? 'Harga Sebelum PPN (DPP)' : 'Harga Sudah Termasuk PPN' }}</label>
+                            <label>Harga (Rp)</label>
                             <input type="text" inputmode="numeric" v-model="persen.ppnHarga"
                                 @keydown.enter="playSound('click'); hitungPersen" placeholder="100.000">
                         </div>
@@ -151,40 +151,10 @@
                     </div>
                 </div>
 
-                <p class="mode-hint">💡 Hitung persen dengan mudah — diskon, komposisi, perubahan nilai, dan PPN
-                </p>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: PANGKAT & AKAR -->
-            <!-- ═══════════════════════════════════════════════ -->
-            <div v-if="modeAktif === 'pangkat'">
-                <div class="pangkat-mode-tabs">
-                    <button type="button" v-for="pt in pangkatTabs" :key="pt.id"
-                        :class="['persen-tab', { active: pangkat.subMode === pt.id }]"
-                        @click="playSound('click'); pangkat.subMode = pt.id; resetHasil()">
-                        {{ pt.label }}
-                    </button>
-                </div>
-
-                <div class="single-col-grid">
-                    <div class="input-group" v-if="pangkat.subMode !== 'akar_n'">
-                        <label>{{ labelPangkatInput }}</label>
-                        <input type="text" inputmode="decimal" v-model="pangkat.a"
-                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="0">
-                    </div>
-                    <div class="input-group" v-if="pangkat.subMode === 'pangkat_n' || pangkat.subMode === 'akar_n'">
-                        <label>{{ pangkat.subMode === 'pangkat_n' ? 'Pangkat ke-' : 'Akar ke-' }}</label>
-                        <input type="text" inputmode="numeric" v-model="pangkat.n"
-                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="3">
-                    </div>
-                    <div class="input-group" v-if="pangkat.subMode === 'akar_n'">
-                        <label>Nilai</label>
-                        <input type="text" inputmode="decimal" v-model="pangkat.a"
-                            @keydown.enter="playSound('click'); hitungPangkat" placeholder="0">
-                    </div>
-                </div>
-                <p class="mode-hint">{{ hintPangkat }}</p>
+                <p class="mode-hint" v-if="persen.subMode === 'diskon'">💡 Hitung harga bayar dan hemat dari diskon</p>
+                <p class="mode-hint" v-if="persen.subMode === 'dari'">💡 Hitung berapa persen suatu nilai dari total</p>
+                <p class="mode-hint" v-if="persen.subMode === 'naik'">💡 Hitung nilai baru setelah kenaikan/penurunan persen</p>
+                <p class="mode-hint" v-if="persen.subMode === 'ppn'">💡 Hitung PPN atau cari DPP dari harga total</p>
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
@@ -295,15 +265,40 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
+            <!-- MODE: RIWAYAT (HISTORY) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div v-if="modeAktif === 'riwayat'">
+                <div class="wa-history-full">
+                    <div v-if="riwayat.length === 0" class="wa-history-empty">
+                        <p>📭 Belum ada riwayat kalkulasi</p>
+                    </div>
+                    <div v-else>
+                        <div class="wa-history-header">
+                            <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
+                            <button type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                        </div>
+                        <div class="wa-history-full-list">
+                            <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
+                                <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
+                                <span class="wa-history-text">{{ item.teks }}</span>
+                                <strong class="wa-history-total">{{ item.total }}</strong>
+                                <span class="wa-history-time">{{ item.waktu }} ✓</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
             <!-- TOMBOL AKSI -->
             <!-- ═══════════════════════════════════════════════ -->
-            <div class="wa-action-buttons" v-if="modeAktif !== 'standar'">
+            <div class="wa-action-buttons" v-if="modeAktif !== 'standar' && modeAktif !== 'riwayat'">
                 <button type="button" @click="playSound('click'); hitungAktif()" class="btn-hitung">Hitung</button>
                 <button type="button" @click="playSound('click'); resetKalkulator()" class="btn-reset">Reset</button>
             </div>
 
             <!-- HASIL -->
-            <div class="wa-bubble-container">
+            <div class="wa-bubble-container" v-if="modeAktif !== 'riwayat'">
                 <div class="wa-bubble-hasil">
                     <span class="wa-label-hasil">Hasil:</span>
                     <!-- Hasil multi-baris untuk persen -->
@@ -316,26 +311,6 @@
                     <h1 v-else>{{ tampilHasil }}</h1>
                     <span class="wa-time">Baru saja ✓✓</span>
                 </div>
-            </div>
-
-            <!-- RIWAYAT DROPDOWN -->
-            <div class="wa-history-section" v-if="riwayat.length > 0">
-                <details class="wa-history-dropdown">
-                    <summary class="wa-history-summary">
-                        <span class="wa-history-icon">🕒</span>
-                        <span class="wa-history-label">Riwayat Kalkulasi</span>
-                        <span class="wa-history-count">({{ riwayat.length }})</span>
-                        <button type="button" class="btn-clear-all-summary" @click.stop="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
-                    </summary>
-                    <div class="wa-history-list">
-                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
-                            <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
-                            <span class="wa-history-text">{{ item.teks }}</span>
-                            <strong class="wa-history-total">{{ item.total }}</strong>
-                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
-                        </div>
-                    </div>
-                </details>
             </div>
 
         </div><!-- end wa-chat-body -->
