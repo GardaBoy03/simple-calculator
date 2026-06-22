@@ -1,6 +1,6 @@
 // ============================================================
-//  Kalkulator WhatsApp — apps.js  v6 (Updated with Auto-Thousand Separator)
-//  Mode: Standar | Persen | SPBU | KWH Listrik | Riwayat
+//  Kalkulator WhatsApp — apps.js  v7 (Persen di Standar)
+//  Mode: Standar (Kalkulator + Persen) | Riwayat
 //  Sound Effects & History Tab
 // ============================================================
 
@@ -72,14 +72,13 @@ window.vueApp = new Vue({
         modeAktif: 'standar',
         tabs: [
             { id: 'standar',  label: '🔢 Standar' },
-            { id: 'persen',   label: '% Persen'  },
-            { id: 'spbu',     label: '⛽ SPBU' },
-            { id: 'kwh',      label: '⚡ KWH Listrik' },
             { id: 'riwayat',  label: '🕒 Riwayat' },
         ],
 
-        // ── Standar ──
+        // ── Standar (dengan Sub-Mode: Kalkulator & Persen) ──
         standar: {
+            subMode: 'kalkulator',
+            // Kalkulator
             display: '0',
             stored: null,
             operator: null,
@@ -87,7 +86,7 @@ window.vueApp = new Vue({
             exprText: '',
         },
 
-        // ── Persen ──
+        // ── Persen (Sub-mode dari Standar) ──
         persen: {
             subMode: 'diskon', harga: '', pct: '', nilai: '', total: '',
             ppnMode: 'tambah', ppnHarga: '', ppnTarif: '11',
@@ -101,27 +100,6 @@ window.vueApp = new Vue({
         ppnModeTabs: [
             { id: 'tambah', label: 'Tambah PPN' },
             { id: 'cari',   label: 'Cari DPP' },
-        ],
-
-        // ── SPBU ──
-        spbu: {
-            subMode: 'liter',
-            uang: '', hargaPerLiter: '', totalBayar: '', liter: '',
-        },
-        spbuTabs: [
-            { id: 'liter', label: '🛢️ Liter dari Uang' },
-            { id: 'harga', label: '💰 Harga/Liter' },
-            { id: 'total', label: '🧾 Total Bayar' },
-        ],
-
-        // ── KWH Listrik ──
-        kwh: {
-            tipe: 'prabayar',
-            awalMeter: '', akhirMeter: '', tarifPerKwh: '',
-        },
-        kwhTabs: [
-            { id: 'prabayar', label: '💳 Prabayar' },
-            { id: 'pascabayar', label: '📄 Pascabayar' },
         ],
 
         // ── Hasil ──
@@ -169,6 +147,11 @@ window.vueApp = new Vue({
             event.target.value = terformat;
         },
 
+        resetHasil() {
+            this.hasilKalkulasi = 0;
+            this.hasilMulti = [];
+        },
+
         // ── Sound Effects ─────────────────────────────────────
         playSound(soundName) {
             soundManager.play(soundName);
@@ -179,79 +162,30 @@ window.vueApp = new Vue({
             this.modeAktif = newMode;
         },
 
-        // ── Hitung mode aktif ──────────────────────────────────
-        hitungAktif() {
-            const methodMap = {
-                persen: 'hitungPersen',
-                spbu: 'hitungSpbu',
-                kwh: 'hitungKwh',
-            };
-            const method = methodMap[this.modeAktif];
-            if (method && typeof this[method] === 'function') {
-                this[method]();
-            }
-        },
-
         // ── Reset Kalkulator ───────────────────────────────────
         resetKalkulator() {
-            if (this.modeAktif === 'standar') {
+            if (this.standar.subMode === 'kalkulator') {
                 this.stdClear();
-            } else if (this.modeAktif === 'persen') {
+            } else if (this.standar.subMode === 'persen') {
                 this.resetPersen();
-            } else if (this.modeAktif === 'spbu') {
-                this.resetSpbu();
-            } else if (this.modeAktif === 'kwh') {
-                this.resetKwh();
-            }
-        },
-
-        resetHasil() {
-            this.hasilKalkulasi = 0;
-            this.hasilMulti = [];
-        },
-
-        // ── Riwayat Kalkulasi ──────────────────────────────────
-        tambahRiwayat(teks, total) {
-            const now = new Date();
-            const jam = String(now.getHours()).padStart(2, '0');
-            const menit = String(now.getMinutes()).padStart(2, '0');
-            const waktu = `${jam}:${menit}`;
-
-            this.riwayat.unshift({
-                id: Date.now(),
-                teks: teks,
-                total: total,
-                waktu: waktu,
-            });
-
-            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
-        },
-
-        hapusSatu(id) {
-            const idx = this.riwayat.findIndex(x => x.id === id);
-            if (idx > -1) {
-                this.riwayat.splice(idx, 1);
-                localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
-            }
-        },
-
-        hapusSemua() {
-            if (confirm('Hapus semua riwayat kalkulasi?')) {
-                this.riwayat = [];
-                localStorage.removeItem('wa_kalkulator_riwayat');
             }
         },
 
         // ════════════════════════════════════════════════════════
-        // MODE: STANDAR
+        // MODE: STANDAR - KALKULATOR
         // ════════════════════════════════════════════════════════
         stdDigit(d) {
             if (this.standar.overwrite) {
                 this.standar.display = d;
                 this.standar.overwrite = false;
             } else {
-                if (this.standar.display.length >= 15) return;
-                this.standar.display += d;
+                if (this.standar.display === '0') {
+                    this.standar.display = d;
+                } else {
+                    if (this.standar.display.length < 16) {
+                        this.standar.display += d;
+                    }
+                }
             }
         },
 
@@ -264,109 +198,115 @@ window.vueApp = new Vue({
             }
         },
 
-        stdOperator(op) {
-            const current = parseFloat(this.standar.display) || 0;
-            if (this.standar.stored !== null && !this.standar.overwrite) {
-                const hasil = this.hitungOpStandar(this.standar.stored, current, this.standar.operator);
-                this.standar.display = this.formatHasilStandar(hasil);
-            }
-            this.standar.stored = parseFloat(this.standar.display) || 0;
-            this.standar.operator = op;
-            this.standar.overwrite = true;
-            this.standar.exprText = `${formatRibuan(this.standar.stored)} ${this.simbolOpStandar(op)}`;
-        },
-
-        simbolOpStandar(op) {
-            const map = { '+': '+', '-': '−', '*': '×', '/': '÷' };
-            return map[op] || op;
-        },
-
-        hitungOpStandar(a, b, op) {
-            switch(op) {
-                case '+': return a + b;
-                case '-': return a - b;
-                case '*': return a * b;
-                case '/': return b !== 0 ? a / b : NaN;
-                default: return b;
-            }
-        },
-
-        formatHasilStandar(nilai) {
-            const s = nilai.toFixed(10);
-            return parseFloat(s).toString().replace('.', ',');
-        },
-
-        stdEquals() {
-            const current = parseFloat(this.standar.display) || 0;
-            const a = this.standar.stored;
-            const op = this.standar.operator;
-            const hasil = this.hitungOpStandar(a, current, op);
-            const teks = `${formatRibuan(a)} ${this.simbolOpStandar(op)} ${formatRibuan(current)} =`;
-
-            if (isNaN(hasil) || !isFinite(hasil)) {
-                this.standar.display = 'Error';
-                this.hasilKalkulasi = 'Tidak bisa dibagi 0';
-                this.tambahRiwayat(teks, 'Tidak bisa dibagi 0');
+        stdBackspace() {
+            if (this.standar.display.length === 1) {
+                this.standar.display = '0';
+                this.standar.overwrite = true;
             } else {
-                this.standar.display = this.formatHasilStandar(hasil);
-                this.hasilKalkulasi = hasil;
-                this.tambahRiwayat(teks, formatDesimal(hasil));
+                this.standar.display = this.standar.display.slice(0, -1);
             }
-            this.hasilMulti = [];
+        },
+
+        stdClear() {
+            this.standar.display = '0';
             this.standar.stored = null;
             this.standar.operator = null;
             this.standar.overwrite = true;
             this.standar.exprText = '';
         },
 
-        stdClear() {
-            this.standar = { display: '0', stored: null, operator: null, overwrite: true, exprText: '' };
-            this.hasilKalkulasi = 0;
-            this.hasilMulti = [];
-        },
-
-        stdBackspace() {
-            if (this.standar.display === 'Error') { this.stdClear(); return; }
-            if (this.standar.overwrite) return;
-            const d = this.standar.display;
-            if (d.length <= 1 || (d.length === 2 && d.startsWith('-'))) {
-                this.standar.display = '0';
-                this.standar.overwrite = true;
-            } else {
-                this.standar.display = d.slice(0, -1);
-            }
-        },
-
         stdToggleSign() {
-            if (this.standar.display === 'Error' || this.standar.display === '0') return;
-            this.standar.display = this.standar.display.startsWith('-')
-                ? this.standar.display.slice(1)
-                : '-' + this.standar.display;
-        },
-
-        stdPercent() {
-            if (this.standar.display === 'Error') return;
-            const current = parseFloat(this.standar.display) || 0;
-            const hasil = current / 100;
-            this.standar.display = this.formatHasilStandar(hasil);
+            let num = parseFloat(this.standar.display.replace(',', '.'));
+            num = -num;
+            this.standar.display = num.toString();
             this.standar.overwrite = true;
         },
 
-        stdKeydown(e) {
-            const k = e.key;
-            if (/^[0-9]$/.test(k)) { this.stdDigit(k); }
-            else if (k === '.' || k === ',') { this.stdDecimal(); }
-            else if (k === '+' || k === '-') { this.stdOperator(k); }
-            else if (k === '*') { this.stdOperator('*'); }
-            else if (k === '/') { e.preventDefault(); this.stdOperator('/'); }
-            else if (k === 'Enter' || k === '=') { e.preventDefault(); this.stdEquals(); }
-            else if (k === 'Backspace') { this.stdBackspace(); }
+        stdOperator(op) {
+            let current = parseFloat(this.standar.display.replace(',', '.'));
+            
+            if (this.standar.operator !== null && !this.standar.overwrite) {
+                current = this.stdCalcInternal();
+                this.standar.display = current.toString();
+            }
+            
+            this.standar.stored = current;
+            this.standar.operator = op;
+            this.standar.overwrite = true;
+            
+            const opSymbol = op === '/' ? '÷' : op === '*' ? '×' : op === '-' ? '−' : '+';
+            this.standar.exprText = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol;
+        },
+
+        stdPercent() {
+            let current = parseFloat(this.standar.display.replace(',', '.'));
+            if (this.standar.stored !== null && this.standar.operator !== null) {
+                current = (this.standar.stored * current) / 100;
+            } else {
+                current = current / 100;
+            }
+            this.standar.display = current.toString();
+            this.standar.overwrite = true;
+        },
+
+        stdCalcInternal() {
+            let result = this.standar.stored;
+            let current = parseFloat(this.standar.display.replace(',', '.'));
+            
+            if (this.standar.operator === '+') result += current;
+            else if (this.standar.operator === '-') result -= current;
+            else if (this.standar.operator === '*') result *= current;
+            else if (this.standar.operator === '/') {
+                if (current === 0) return 'Error';
+                result /= current;
+            }
+            return result;
+        },
+
+        stdEquals() {
+            if (this.standar.operator === null || this.standar.overwrite) return;
+            
+            let result = this.stdCalcInternal();
+            
+            if (result === 'Error') {
+                this.standar.display = 'Error';
+            } else {
+                const operand2 = this.standar.display;
+                const resultStr = result.toString();
+                this.standar.display = resultStr;
+                
+                // Format pesan: "10 + 2 = 12"
+                const opSymbol = this.standar.operator === '/' ? '÷' : this.standar.operator === '*' ? '×' : this.standar.operator === '-' ? '−' : '+';
+                const historyMsg = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' =';
+                
+                this.tambahRiwayat(
+                    historyMsg,
+                    formatRibuan(this.standar.display)
+                );
+            }
+            
+            this.standar.stored = null;
+            this.standar.operator = null;
+            this.standar.overwrite = true;
+            this.standar.exprText = '';
+        },
+
+        stdKeydown(event) {
+            const k = event.key;
+            if (/^\d$/.test(k)) { this.stdDigit(k); }
+            else if (k === ',' || k === '.') { this.stdDecimal(); }
+            else if (k === '+' || k === '-' || k === '*' || k === '/') {
+                event.preventDefault();
+                this.stdOperator(k === '/' ? '/' : k === '*' ? '*' : k === '-' ? '-' : '+');
+            }
+            else if (k === 'Enter') { event.preventDefault(); this.stdEquals(); }
             else if (k === 'Escape') { this.stdClear(); }
+            else if (k === 'Backspace') { this.stdBackspace(); }
             else if (k === '%') { this.stdPercent(); }
         },
 
         // ════════════════════════════════════════════════════════
-        // MODE: PERSEN
+        // MODE: STANDAR - PERSEN
         // ════════════════════════════════════════════════════════
         hitungPersen() {
             this.hasilMulti = [];
@@ -459,106 +399,34 @@ window.vueApp = new Vue({
         },
 
         // ════════════════════════════════════════════════════════
-        // MODE: SPBU
+        // RIWAYAT / HISTORY
         // ════════════════════════════════════════════════════════
-        hitungSpbu() {
-            this.hasilMulti = [];
-            const sub = this.spbu.subMode;
+        tambahRiwayat(teks, total) {
+            const now = new Date();
+            const jam = String(now.getHours()).padStart(2, '0');
+            const menit = String(now.getMinutes()).padStart(2, '0');
+            const waktu = jam + ':' + menit;
+            
+            this.riwayat.unshift({
+                id: Date.now(),
+                teks: teks,
+                total: total,
+                waktu: waktu,
+            });
+            
+            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+        },
 
-            if (sub === 'liter') {
-                const uang = parseFloat(this.spbu.uang.toString().replace(/\./g,'')) || 0;
-                const harga = parseFloat(this.spbu.hargaPerLiter.toString().replace(/\./g,'')) || 0;
-                if (harga === 0) { this.hasilKalkulasi = 'Harga ≠ 0'; return; }
-                const liter = uang / harga;
-                this.hasilMulti = [
-                    { label: 'Uang:', nilai: 'Rp ' + formatRibuan(uang) },
-                    { label: 'Liter:', nilai: formatDesimal(liter) + ' L' },
-                ];
-                this.tambahRiwayat(
-                    `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(harga)}/L =`,
-                    formatDesimal(liter) + ' L'
-                );
+        hapusSatu(id) {
+            this.riwayat = this.riwayat.filter(r => r.id !== id);
+            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+        },
 
-            } else if (sub === 'harga') {
-                const total = parseFloat(this.spbu.totalBayar.toString().replace(/\./g,'')) || 0;
-                const liter = parseFloat(this.spbu.liter.toString().replace(/\./g,'')) || 0;
-                if (liter === 0) { this.hasilKalkulasi = 'Liter ≠ 0'; return; }
-                const harga = total / liter;
-                this.hasilMulti = [
-                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(total) },
-                    { label: 'Harga/L:', nilai: 'Rp ' + formatDesimal(harga) },
-                ];
-                this.tambahRiwayat(
-                    `Rp${formatRibuan(total)} ÷ ${formatDesimal(liter)}L =`,
-                    'Rp ' + formatDesimal(harga)
-                );
-
-            } else if (sub === 'total') {
-                const liter = parseFloat(this.spbu.liter.toString().replace(/\./g,'')) || 0;
-                const harga = parseFloat(this.spbu.hargaPerLiter.toString().replace(/\./g,'')) || 0;
-                const total = liter * harga;
-                this.hasilMulti = [
-                    { label: 'Liter:', nilai: formatDesimal(liter) + ' L' },
-                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(total) },
-                ];
-                this.tambahRiwayat(
-                    `${formatDesimal(liter)}L × Rp${formatRibuan(harga)}/L =`,
-                    'Rp ' + formatRibuan(total)
-                );
+        hapusSemua() {
+            if (confirm('Hapus semua riwayat?')) {
+                this.riwayat = [];
+                localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
             }
-        },
-
-        resetSpbu() {
-            this.spbu = { subMode: 'liter', uang: '', hargaPerLiter: '', totalBayar: '', liter: '' };
-            this.hasilKalkulasi = 0;
-            this.hasilMulti = [];
-        },
-
-        // ════════════════════════════════════════════════════════
-        // MODE: KWH LISTRIK
-        // ════════════════════════════════════════════════════════
-        hitungKwh() {
-            this.hasilMulti = [];
-            const tipe = this.kwh.tipe;
-
-            if (tipe === 'prabayar') {
-                const uang = parseFloat(this.kwh.awalMeter.toString().replace(/\./g,'')) || 0;
-                const tarif = parseFloat(this.kwh.tarifPerKwh.toString().replace(/\./g,'')) || 0;
-                if (tarif === 0) { this.hasilKalkulasi = 'Tarif ≠ 0'; return; }
-                const kwh = uang / tarif;
-                this.hasilMulti = [
-                    { label: 'Uang Prabayar:', nilai: 'Rp ' + formatRibuan(uang) },
-                    { label: 'Tarif/KWH:',    nilai: 'Rp ' + formatRibuan(tarif) },
-                    { label: 'Total KWH:',    nilai: formatDesimal(kwh) + ' KWH' },
-                ];
-                this.tambahRiwayat(
-                    `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(tarif)}/KWH =`,
-                    formatDesimal(kwh) + ' KWH'
-                );
-
-            } else if (tipe === 'pascabayar') {
-                const awal = parseFloat(this.kwh.awalMeter.toString().replace(/\./g,'')) || 0;
-                const akhir = parseFloat(this.kwh.akhirMeter.toString().replace(/\./g,'')) || 0;
-                const tarif = parseFloat(this.kwh.tarifPerKwh.toString().replace(/\./g,'')) || 0;
-                const selisih = akhir - awal;
-                const bayar = selisih * tarif;
-                this.hasilMulti = [
-                    { label: 'Meter Awal:',  nilai: formatDesimal(awal) + ' KWH' },
-                    { label: 'Meter Akhir:', nilai: formatDesimal(akhir) + ' KWH' },
-                    { label: 'Terpakai:',    nilai: formatDesimal(selisih) + ' KWH' },
-                    { label: 'Total Bayar:', nilai: 'Rp ' + formatRibuan(bayar) },
-                ];
-                this.tambahRiwayat(
-                    `${formatDesimal(akhir)} - ${formatDesimal(awal)} = ${formatDesimal(selisih)} KWH × Rp${formatRibuan(tarif)}/KWH =`,
-                    'Rp ' + formatRibuan(bayar)
-                );
-            }
-        },
-
-        resetKwh() {
-            this.kwh = { tipe: 'prabayar', awalMeter: '', akhirMeter: '', tarifPerKwh: '' };
-            this.hasilKalkulasi = 0;
-            this.hasilMulti = [];
         },
     }
 });
