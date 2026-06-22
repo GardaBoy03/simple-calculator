@@ -12,7 +12,6 @@
 <div id="app">
     <form @submit.prevent class="wa-container">
 
-        <!-- HEADER -->
         <div class="wa-header">
             <div class="wa-header-info">
                 <div class="wa-avatar">🧮</div>
@@ -25,7 +24,6 @@
 
         <div class="wa-chat-body">
 
-            <!-- TAB MODE - Dropdown Select -->
             <div class="mode-select-wrapper">
                 <select class="mode-select" v-model="modeAktif" @change="gantiMode(modeAktif)">
                     <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ tab.label }}</option>
@@ -35,9 +33,6 @@
 
             <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hitung • <b>Esc</b> untuk reset</p>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: STANDAR -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'standar'">
                 <div class="std-kalkulator" tabindex="0" @keydown="stdKeydown">
                     <div class="std-layar">
@@ -74,9 +69,6 @@
                 <p class="mode-hint">💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja</p>
             </div>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: PERSEN -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'persen'">
                 <div class="persen-mode-tabs">
                     <button type="button" v-for="pt in persenTabs" :key="pt.id"
@@ -86,49 +78,45 @@
                     </button>
                 </div>
 
-                <!-- Diskon -->
                 <div v-if="persen.subMode === 'diskon'" class="single-col-grid">
                     <div class="input-group">
                         <label>Harga Asal (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="persen.harga"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="100.000">
+                        <input type="text" inputmode="numeric" :value="persen.harga" @input="formatInputRibuan(persen, 'harga', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="100.000">
                     </div>
                     <div class="input-group">
                         <label>Diskon (%)</label>
-                        <input type="text" inputmode="numeric" v-model="persen.pct"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="20">
+                        <input type="text" inputmode="numeric" :value="persen.pct" @input="formatInputRibuan(persen, 'pct', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="20">
                     </div>
                 </div>
 
-                <!-- Berapa % dari -->
                 <div v-if="persen.subMode === 'dari'" class="single-col-grid">
                     <div class="input-group">
                         <label>Nilai</label>
-                        <input type="text" inputmode="numeric" v-model="persen.nilai"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="25">
+                        <input type="text" inputmode="numeric" :value="persen.nilai" @input="formatInputRibuan(persen, 'nilai', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="25">
                     </div>
                     <div class="input-group">
                         <label>Dari Total</label>
-                        <input type="text" inputmode="numeric" v-model="persen.total"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="200">
+                        <input type="text" inputmode="numeric" :value="persen.total" @input="formatInputRibuan(persen, 'total', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="200">
                     </div>
                 </div>
 
-                <!-- Tambah / Kurang persen -->
                 <div v-if="persen.subMode === 'naik'" class="single-col-grid">
                     <div class="input-group">
                         <label>Nilai Asal</label>
-                        <input type="text" inputmode="numeric" v-model="persen.harga"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="50.000">
+                        <input type="text" inputmode="numeric" :value="persen.harga" @input="formatInputRibuan(persen, 'harga', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="50.000">
                     </div>
                     <div class="input-group">
                         <label>Naik / Turun (%)</label>
-                        <input type="text" inputmode="numeric" v-model="persen.pct"
-                            @keydown.enter="playSound('click'); hitungPersen" placeholder="15">
+                        <input type="text" inputmode="numeric" :value="persen.pct" @input="formatInputRibuan(persen, 'pct', $event)"
+                            @keydown.enter="playSound('click'); hitungPersen()" placeholder="15">
                     </div>
                 </div>
 
-                <!-- PPN -->
                 <div v-if="persen.subMode === 'ppn'">
                     <div class="persen-mode-tabs">
                         <button type="button" v-for="pm in ppnModeTabs" :key="pm.id"
@@ -140,13 +128,13 @@
                     <div class="single-col-grid">
                         <div class="input-group">
                             <label>Harga (Rp)</label>
-                            <input type="text" inputmode="numeric" v-model="persen.ppnHarga"
-                                @keydown.enter="playSound('click'); hitungPersen" placeholder="100.000">
+                            <input type="text" inputmode="numeric" :value="persen.ppnHarga" @input="formatInputRibuan(persen, 'ppnHarga', $event)"
+                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="100.000">
                         </div>
                         <div class="input-group">
                             <label>Tarif PPN (%)</label>
-                            <input type="text" inputmode="numeric" v-model="persen.ppnTarif"
-                                @keydown.enter="playSound('click'); hitungPersen" placeholder="11">
+                            <input type="text" inputmode="numeric" :value="persen.ppnTarif" @input="formatInputRibuan(persen, 'ppnTarif', $event)"
+                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="11">
                         </div>
                     </div>
                 </div>
@@ -157,9 +145,6 @@
                 <p class="mode-hint" v-if="persen.subMode === 'ppn'">💡 Hitung PPN atau cari DPP dari harga total</p>
             </div>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: SPBU (HARGA PER LITER) -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'spbu'">
                 <div class="persen-mode-tabs">
                     <button type="button" v-for="st in spbuTabs" :key="st.id"
@@ -169,45 +154,42 @@
                     </button>
                 </div>
 
-                <!-- Liter dari Uang -->
                 <div v-if="spbu.subMode === 'liter'" class="single-col-grid">
                     <div class="input-group">
                         <label>Uang yang Dibawa (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="spbu.uang"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="50.000">
+                        <input type="text" inputmode="numeric" :value="spbu.uang" @input="formatInputRibuan(spbu, 'uang', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="50.000">
                     </div>
                     <div class="input-group">
                         <label>Harga BBM per Liter (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                        <input type="text" inputmode="numeric" :value="spbu.hargaPerLiter" @input="formatInputRibuan(spbu, 'hargaPerLiter', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="10.000">
                     </div>
                 </div>
 
-                <!-- Hitung Harga per Liter -->
                 <div v-if="spbu.subMode === 'harga'" class="single-col-grid">
                     <div class="input-group">
                         <label>Total Bayar di Kasir (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="spbu.totalBayar"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="100.000">
+                        <input type="text" inputmode="numeric" :value="spbu.totalBayar" @input="formatInputRibuan(spbu, 'totalBayar', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="100.000">
                     </div>
                     <div class="input-group">
                         <label>Jumlah Liter Terisi</label>
-                        <input type="text" inputmode="decimal" v-model="spbu.liter"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                        <input type="text" inputmode="numeric" :value="spbu.liter" @input="formatInputRibuan(spbu, 'liter', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="10">
                     </div>
                 </div>
 
-                <!-- Hitung Total Bayar -->
                 <div v-if="spbu.subMode === 'total'" class="single-col-grid">
                     <div class="input-group">
                         <label>Jumlah Liter yang Diisi</label>
-                        <input type="text" inputmode="decimal" v-model="spbu.liter"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10">
+                        <input type="text" inputmode="numeric" :value="spbu.liter" @input="formatInputRibuan(spbu, 'liter', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="10">
                     </div>
                     <div class="input-group">
                         <label>Harga BBM per Liter (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="spbu.hargaPerLiter"
-                            @keydown.enter="playSound('click'); hitungSpbu" @keydown.esc="resetKalkulator" placeholder="10.000">
+                        <input type="text" inputmode="numeric" :value="spbu.hargaPerLiter" @input="formatInputRibuan(spbu, 'hargaPerLiter', $event)"
+                            @keydown.enter="playSound('click'); hitungSpbu()" @keydown.esc="resetKalkulator()" placeholder="10.000">
                     </div>
                 </div>
 
@@ -216,9 +198,6 @@
                 <p class="mode-hint" v-if="spbu.subMode === 'total'">💡 Hitung total yang harus dibayar di kasir SPBU</p>
             </div>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: KWH LISTRIK (Prabayar/Pascabayar) -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'kwh'">
                 <div class="persen-mode-tabs">
                     <button type="button" v-for="kt in kwhTabs" :key="kt.id"
@@ -228,45 +207,40 @@
                     </button>
                 </div>
 
-                <!-- Prabayar -->
                 <div v-if="kwh.tipe === 'prabayar'" class="single-col-grid">
                     <div class="input-group">
                         <label>Uang yang Dibayarkan (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="kwh.awalMeter"
-                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="50.000">
+                        <input type="text" inputmode="numeric" :value="kwh.awalMeter" @input="formatInputRibuan(kwh, 'awalMeter', $event)"
+                            @keydown.enter="playSound('click'); hitungKwh()" @keydown.esc="resetKalkulator()" placeholder="50.000">
                     </div>
                     <div class="input-group">
                         <label>Tarif per KWH (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="kwh.tarifPerKwh"
-                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1.500">
+                        <input type="text" inputmode="numeric" :value="kwh.tarifPerKwh" @input="formatInputRibuan(kwh, 'tarifPerKwh', $event)"
+                            @keydown.enter="playSound('click'); hitungKwh()" @keydown.esc="resetKalkulator()" placeholder="1.500">
                     </div>
                     <p class="mode-hint">💡 Hitung berapa KWH listrik yang didapat dari uang prabayar</p>
                 </div>
 
-                <!-- Pascabayar -->
                 <div v-if="kwh.tipe === 'pascabayar'" class="single-col-grid">
                     <div class="input-group">
                         <label>Meter Awal (KWH)</label>
-                        <input type="text" inputmode="decimal" v-model="kwh.awalMeter"
-                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1000">
+                        <input type="text" inputmode="numeric" :value="kwh.awalMeter" @input="formatInputRibuan(kwh, 'awalMeter', $event)"
+                            @keydown.enter="playSound('click'); hitungKwh()" @keydown.esc="resetKalkulator()" placeholder="1000">
                     </div>
                     <div class="input-group">
                         <label>Meter Akhir (KWH)</label>
-                        <input type="text" inputmode="decimal" v-model="kwh.akhirMeter"
-                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1100">
+                        <input type="text" inputmode="numeric" :value="kwh.akhirMeter" @input="formatInputRibuan(kwh, 'akhirMeter', $event)"
+                            @keydown.enter="playSound('click'); hitungKwh()" @keydown.esc="resetKalkulator()" placeholder="1100">
                     </div>
                     <div class="input-group">
                         <label>Tarif per KWH (Rp)</label>
-                        <input type="text" inputmode="numeric" v-model="kwh.tarifPerKwh"
-                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1.500">
+                        <input type="text" inputmode="numeric" :value="kwh.tarifPerKwh" @input="formatInputRibuan(kwh, 'tarifPerKwh', $event)"
+                            @keydown.enter="playSound('click'); hitungKwh()" @keydown.esc="resetKalkulator()" placeholder="1.500">
                     </div>
                     <p class="mode-hint">💡 Hitung total pembayaran listrik pascabayar dari selisih meter</p>
                 </div>
             </div>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: RIWAYAT (HISTORY) -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div v-if="modeAktif === 'riwayat'">
                 <div class="wa-history-full">
                     <div v-if="riwayat.length === 0" class="wa-history-empty">
@@ -289,19 +263,14 @@
                 </div>
             </div>
 
-            <!-- ═══════════════════════════════════════════════ -->
-            <!-- TOMBOL AKSI -->
-            <!-- ═══════════════════════════════════════════════ -->
             <div class="wa-action-buttons" v-if="modeAktif !== 'standar' && modeAktif !== 'riwayat'">
                 <button type="button" @click="playSound('click'); hitungAktif()" class="btn-hitung">Hitung</button>
                 <button type="button" @click="playSound('click'); resetKalkulator()" class="btn-reset">Reset</button>
             </div>
 
-            <!-- HASIL -->
             <div class="wa-bubble-container" v-if="modeAktif !== 'riwayat'">
                 <div class="wa-bubble-hasil">
                     <span class="wa-label-hasil">Hasil:</span>
-                    <!-- Hasil multi-baris untuk persen -->
                     <div v-if="hasilMulti.length > 0">
                         <div v-for="(h, i) in hasilMulti" :key="i" class="hasil-multi-row">
                             <span class="hasil-multi-label">{{ h.label }}</span>
@@ -313,7 +282,7 @@
                 </div>
             </div>
 
-        </div><!-- end wa-chat-body -->
+        </div>
     </form>
 </div>
 
