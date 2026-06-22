@@ -247,56 +247,63 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
-            <!-- MODE: CATATAN (NOTES) -->
+            <!-- MODE: KWH LISTRIK (Prabayar/Pascabayar) -->
             <!-- ═══════════════════════════════════════════════ -->
-            <div v-if="modeAktif === 'catatan'">
-                <div class="catatan-container">
-                    <div class="catatan-header">
-                        <h4>Catatan Kalkulasi Anda</h4>
-                        <button type="button" class="btn-refresh-catatan" @click="playSound('click'); muatCatatan()" title="Refresh">🔄</button>
-                    </div>
-                    
-                    <div class="catatan-input-group">
-                        <textarea v-model="catatan.teks" 
-                            @input="catatan.autoSave = true"
-                            placeholder="Tulis catatan atau rumus kalkulasi Anda di sini..."
-                            class="catatan-textarea"></textarea>
-                        <div class="catatan-actions">
-                            <button type="button" class="btn-simpan-catatan" @click="playSound('click'); simpanCatatan()">💾 Simpan</button>
-                            <button type="button" class="btn-hapus-catatan" @click="playSound('click'); hapusCatatan()">🗑️ Hapus</button>
-                        </div>
-                    </div>
-
-                    <div v-if="catatan.waktuSimpan" class="catatan-info">
-                        ✓ Tersimpan: {{ catatan.waktuSimpan }}
-                    </div>
-
-                    <div class="catatan-history" v-if="catatanHistory.length > 0">
-                        <h5>📜 Riwayat Catatan</h5>
-                        <div class="catatan-history-list">
-                            <div v-for="(c, idx) in catatanHistory" :key="idx" class="catatan-history-item">
-                                <button type="button" class="catatan-history-btn" @click="playSound('click'); muatCatatan(idx)">
-                                    <span class="catatan-history-preview">{{ c.teks.substring(0, 40) }}...</span>
-                                    <span class="catatan-history-time">{{ c.waktu }}</span>
-                                </button>
-                                <button type="button" class="catatan-history-del" @click="playSound('click'); hapusCatatanHistory(idx)">×</button>
-                            </div>
-                        </div>
-                    </div>
+            <div v-if="modeAktif === 'kwh'">
+                <div class="persen-mode-tabs">
+                    <button type="button" v-for="kt in kwhTabs" :key="kt.id"
+                        :class="['persen-tab', { active: kwh.tipe === kt.id }]"
+                        @click="playSound('click'); kwh.tipe = kt.id; resetHasil()">
+                        {{ kt.label }}
+                    </button>
                 </div>
-                <p class="mode-hint">💡 Simpan catatan kalkulasi Anda untuk referensi di masa mendatang</p>
+
+                <!-- Prabayar -->
+                <div v-if="kwh.tipe === 'prabayar'" class="single-col-grid">
+                    <div class="input-group">
+                        <label>Uang yang Dibayarkan (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="kwh.awalMeter"
+                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="50.000">
+                    </div>
+                    <div class="input-group">
+                        <label>Tarif per KWH (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="kwh.tarifPerKwh"
+                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1.500">
+                    </div>
+                    <p class="mode-hint">💡 Hitung berapa KWH listrik yang didapat dari uang prabayar</p>
+                </div>
+
+                <!-- Pascabayar -->
+                <div v-if="kwh.tipe === 'pascabayar'" class="single-col-grid">
+                    <div class="input-group">
+                        <label>Meter Awal (KWH)</label>
+                        <input type="text" inputmode="decimal" v-model="kwh.awalMeter"
+                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1000">
+                    </div>
+                    <div class="input-group">
+                        <label>Meter Akhir (KWH)</label>
+                        <input type="text" inputmode="decimal" v-model="kwh.akhirMeter"
+                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1100">
+                    </div>
+                    <div class="input-group">
+                        <label>Tarif per KWH (Rp)</label>
+                        <input type="text" inputmode="numeric" v-model="kwh.tarifPerKwh"
+                            @keydown.enter="playSound('click'); hitungKwh" @keydown.esc="resetKalkulator" placeholder="1.500">
+                    </div>
+                    <p class="mode-hint">💡 Hitung total pembayaran listrik pascabayar dari selisih meter</p>
+                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
             <!-- TOMBOL AKSI -->
             <!-- ═══════════════════════════════════════════════ -->
-            <div class="wa-action-buttons" v-if="modeAktif !== 'standar' && modeAktif !== 'catatan'">
+            <div class="wa-action-buttons" v-if="modeAktif !== 'standar'">
                 <button type="button" @click="playSound('click'); hitungAktif()" class="btn-hitung">Hitung</button>
                 <button type="button" @click="playSound('click'); resetKalkulator()" class="btn-reset">Reset</button>
             </div>
 
             <!-- HASIL -->
-            <div class="wa-bubble-container" v-if="modeAktif !== 'catatan'">
+            <div class="wa-bubble-container">
                 <div class="wa-bubble-hasil">
                     <span class="wa-label-hasil">Hasil:</span>
                     <!-- Hasil multi-baris untuk persen -->
@@ -311,25 +318,24 @@
                 </div>
             </div>
 
-            <!-- RIWAYAT -->
-            <div class="wa-history-section" v-if="riwayat.length > 0 && modeAktif !== 'catatan'">
-                <div class="wa-history-header">
-                    <div class="wa-history-title-wrapper">
-                        <span>🕒 Riwayat</span>
-                        <button type="button" @click="playSound('click'); toggleRiwayat()" class="btn-toggle-history">
-                            {{ tampilkanRiwayat ? '[ Sembunyikan ]' : '[ Tampilkan ]' }}
-                        </button>
+            <!-- RIWAYAT DROPDOWN -->
+            <div class="wa-history-section" v-if="riwayat.length > 0">
+                <details class="wa-history-dropdown">
+                    <summary class="wa-history-summary">
+                        <span class="wa-history-icon">🕒</span>
+                        <span class="wa-history-label">Riwayat Kalkulasi</span>
+                        <span class="wa-history-count">({{ riwayat.length }})</span>
+                        <button type="button" class="btn-clear-all-summary" @click.stop="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                    </summary>
+                    <div class="wa-history-list">
+                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
+                            <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
+                            <span class="wa-history-text">{{ item.teks }}</span>
+                            <strong class="wa-history-total">{{ item.total }}</strong>
+                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
+                        </div>
                     </div>
-                    <button type="button" @click="playSound('click'); hapusSemua()" class="btn-clear-all">Hapus Semua</button>
-                </div>
-                <div class="wa-history-list" v-show="tampilkanRiwayat">
-                    <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
-                        <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
-                        <span class="wa-history-text">{{ item.teks }}</span>
-                        <strong class="wa-history-total">{{ item.total }}</strong>
-                        <span class="wa-history-time">{{ item.waktu }} ✓</span>
-                    </div>
-                </div>
+                </details>
             </div>
 
         </div><!-- end wa-chat-body -->

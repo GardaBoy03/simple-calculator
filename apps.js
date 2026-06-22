@@ -1,7 +1,7 @@
 // ============================================================
-//  Kalkulator WhatsApp — apps.js  v4
-//  Mode: Standar | Persen | Pangkat & Akar | SPBU | Catatan
-//  Sound Effects & Notes Feature
+//  Kalkulator WhatsApp — apps.js  v5
+//  Mode: Standar | Persen | Pangkat & Akar | SPBU | KWH Listrik
+//  Sound Effects & History with Dropdown
 // ============================================================
 
 
@@ -78,7 +78,7 @@ window.vueApp = new Vue({
             { id: 'persen',   label: '% Persen'  },
             { id: 'pangkat',  label: '√ Pangkat' },
             { id: 'spbu',     label: '⛽ SPBU' },
-            { id: 'catatan',  label: '📝 Catatan' },
+            { id: 'kwh',      label: '⚡ KWH Listrik' },
         ],
 
         // ── Standar (kalkulator bebas seperti kalkulator pada umumnya) ──
@@ -129,13 +129,15 @@ window.vueApp = new Vue({
             { id: 'total', label: '🧾 Total Bayar' },
         ],
 
-        // ── Catatan (Notes) ──
-        catatan: {
-            teks: '',
-            waktuSimpan: '',
-            autoSave: false,
+        // ── KWH Listrik (Prabayar/Pascabayar) ──
+        kwh: {
+            tipe: 'prabayar', // prabayar atau pascabayar
+            awalMeter: '', akhirMeter: '', tarifPerKwh: '',
         },
-        catatanHistory: [],
+        kwhTabs: [
+            { id: 'prabayar', label: '💳 Prabayar' },
+            { id: 'pascabayar', label: '📄 Pascabayar' },
+        ],
 
         // ── Hasil ──
         hasilKalkulasi: 0,
@@ -151,22 +153,6 @@ window.vueApp = new Vue({
         const savedRiwayat = localStorage.getItem('wa_kalkulator_riwayat');
         if (savedRiwayat) { 
             try { this.riwayat = JSON.parse(savedRiwayat); } catch(e) {} 
-        }
-
-        // Load catatan
-        const savedCatatan = localStorage.getItem('wa_kalkulator_catatan');
-        if (savedCatatan) {
-            try {
-                const data = JSON.parse(savedCatatan);
-                this.catatan.teks = data.teks || '';
-                this.catatan.waktuSimpan = data.waktuSimpan || '';
-            } catch(e) {}
-        }
-
-        // Load catatan history
-        const savedHistory = localStorage.getItem('wa_kalkulator_catatan_history');
-        if (savedHistory) {
-            try { this.catatanHistory = JSON.parse(savedHistory); } catch(e) {}
         }
     },
 
@@ -229,6 +215,7 @@ window.vueApp = new Vue({
                 persen:  'hitungPersen',
                 pangkat: 'hitungPangkat',
                 spbu:    'hitungSpbu',
+                kwh:     'hitungKwh',
             };
             this[map[this.modeAktif]]();
         },
@@ -246,55 +233,6 @@ window.vueApp = new Vue({
             });
             this.simpanKeStorage();
             this.tampilkanRiwayat = true;
-        },
-
-        // ── Catatan (Notes) Methods ───────────────────────────
-        simpanCatatan() {
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            this.catatan.waktuSimpan = now;
-            
-            // Simpan catatan utama
-            const catatanData = {
-                teks: this.catatan.teks,
-                waktuSimpan: this.catatan.waktuSimpan
-            };
-            localStorage.setItem('wa_kalkulator_catatan', JSON.stringify(catatanData));
-
-            // Tambah ke history jika ada isi baru
-            if (this.catatan.teks.trim()) {
-                const historyItem = {
-                    teks: this.catatan.teks,
-                    waktu: now
-                };
-                this.catatanHistory.unshift(historyItem);
-                // Batasi history ke 10 item
-                if (this.catatanHistory.length > 10) {
-                    this.catatanHistory = this.catatanHistory.slice(0, 10);
-                }
-                localStorage.setItem('wa_kalkulator_catatan_history', JSON.stringify(this.catatanHistory));
-            }
-        },
-
-        hapusCatatan() {
-            if (confirm('Hapus catatan saat ini?')) {
-                this.catatan.teks = '';
-                this.catatan.waktuSimpan = '';
-                localStorage.removeItem('wa_kalkulator_catatan');
-            }
-        },
-
-        muatCatatan(idx) {
-            if (idx !== undefined && this.catatanHistory[idx]) {
-                this.catatan.teks = this.catatanHistory[idx].teks;
-                this.catatan.waktuSimpan = this.catatanHistory[idx].waktu;
-            }
-        },
-
-        hapusCatatanHistory(idx) {
-            if (confirm('Hapus item dari riwayat?')) {
-                this.catatanHistory.splice(idx, 1);
-                localStorage.setItem('wa_kalkulator_catatan_history', JSON.stringify(this.catatanHistory));
-            }
         },
 
         // ── MODE: STANDAR (kalkulator bebas) ──────────────────
@@ -610,6 +548,56 @@ window.vueApp = new Vue({
             }
         },
 
+        // ── MODE: KWH LISTRIK (Prabayar/Pascabayar) ─────────────
+        hitungKwh() {
+            this.hasilMulti = [];
+            const awal = parseFloat(String(this.kwh.awalMeter).replace(',', '.')) || 0;
+            const akhir = parseFloat(String(this.kwh.akhirMeter).replace(',', '.')) || 0;
+            const tarif = parseFloat(String(this.kwh.tarifPerKwh).replace(/\./g, '')) || 0;
+
+            if (tarif === 0) { 
+                this.hasilKalkulasi = 'Tarif per KWH ≠ 0'; 
+                return; 
+            }
+
+            if (this.kwh.tipe === 'prabayar') {
+                // Untuk prabayar: input adalah uang yang dibayarkan, hitung berapa KWH yang didapat
+                const uang = awal; // awalMeter digunakan untuk input uang
+                const kwh = uang / tarif;
+                const totalBayar = kwh * tarif;
+                const kembalian = uang - totalBayar;
+
+                this.hasilMulti = [
+                    { label: 'KWH Didapat:',    nilai: formatDesimal(kwh, 2) + ' KWH' },
+                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(totalBayar)) },
+                    { label: 'Kembalian:',       nilai: 'Rp ' + formatRibuan(Math.round(kembalian)) },
+                ];
+                this.tambahRiwayat(
+                    `Rp${formatRibuan(uang)} ÷ Rp${formatRibuan(tarif)}/KWH =`,
+                    formatDesimal(kwh, 2) + ' KWH'
+                );
+            } else {
+                // Untuk pascabayar: hitung pemakaian dari selisih meter
+                if (akhir < awal) {
+                    this.hasilKalkulasi = 'Meter akhir harus ≥ meter awal';
+                    return;
+                }
+
+                const pemakaian = akhir - awal;
+                const totalBayar = pemakaian * tarif;
+
+                this.hasilMulti = [
+                    { label: 'Pemakaian KWH:',   nilai: formatDesimal(pemakaian, 2) + ' KWH' },
+                    { label: 'Tarif per KWH:',   nilai: 'Rp ' + formatRibuan(tarif) },
+                    { label: 'Total Bayar:',     nilai: 'Rp ' + formatRibuan(Math.round(totalBayar)) },
+                ];
+                this.tambahRiwayat(
+                    `${formatDesimal(pemakaian, 2)} KWH × Rp${formatRibuan(tarif)} =`,
+                    'Rp ' + formatRibuan(Math.round(totalBayar))
+                );
+            }
+        },
+
         // ── Reset ─────────────────────────────────────────────
         resetKalkulator() {
             this.standar = { display: '0', stored: null, operator: null, overwrite: true, exprText: '' };
@@ -619,6 +607,7 @@ window.vueApp = new Vue({
             this.pangkat.a = ''; this.pangkat.n = '';
             this.spbu.uang = ''; this.spbu.hargaPerLiter = '';
             this.spbu.totalBayar = ''; this.spbu.liter = '';
+            this.kwh.awalMeter = ''; this.kwh.akhirMeter = ''; this.kwh.tarifPerKwh = '';
             this.hasilKalkulasi = 0;
             this.hasilMulti = [];
             if (document.activeElement) document.activeElement.blur();
