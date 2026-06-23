@@ -8,9 +8,25 @@
 function formatRibuan(nilai) {
     if (nilai === '' || nilai === null || nilai === undefined) return '';
     if (typeof nilai === 'string' && isNaN(Number(nilai))) return nilai;
-    const parts = nilai.toString().split('.');
+    
+    // Handle nilai negatif
+    let isNegative = false;
+    let numStr = nilai.toString();
+    if (numStr.startsWith('-')) {
+        isNegative = true;
+        numStr = numStr.substring(1);
+    }
+    
+    const parts = numStr.split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return parts.join(',');
+    let result = parts.join(',');
+    
+    // Tambahkan minus kembali jika ada
+    if (isNegative) {
+        result = '-' + result;
+    }
+    
+    return result;
 }
 
 function formatDesimal(nilai, angka = 6) {
@@ -139,9 +155,24 @@ window.vueApp = new Vue({
         // ── Helper: Live Format Ribuan Saat Diketik ──
         formatInputRibuan(objek, properti, event) {
             let nilaiAsli = event.target.value;
+            
+            // Field yang boleh negatif: pct, ppnTarif
+            const bolehNegatif = ['pct', 'ppnTarif'].includes(properti);
+            
+            // Ambil tanda minus jika ada (untuk field yang boleh negatif)
+            let tanda = '';
+            if (bolehNegatif && nilaiAsli.includes('-')) {
+                tanda = '-';
+            }
+            
             // Hanya ambil digit angka saja
             let hanyaAngka = nilaiAsli.replace(/\D/g, '');
             let terformat = formatRibuan(hanyaAngka);
+            
+            // Tambahkan tanda minus kembali jika ada
+            if (tanda && terformat) {
+                terformat = tanda + terformat;
+            }
             
             // Update model data secara reaktif
             objek[properti] = terformat;
