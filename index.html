@@ -171,7 +171,14 @@
                     <div v-else>
                         <div class="wa-history-header">
                             <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
-                            <button type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                            <div class="wa-history-actions">
+                                <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke Cloud">☁️ Export</button>
+                                <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari Cloud">📥 Import</button>
+                                <button type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                            </div>
+                        </div>
+                        <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
+                            {{ syncStatus.message }}
                         </div>
                         <div class="wa-history-full-list">
                             <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">

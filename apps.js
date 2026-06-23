@@ -84,6 +84,7 @@ window.vueApp = new Vue({
             operator: null,
             overwrite: true,
             exprText: '',
+            nextInputResetExpr: false,
         },
 
         // ── Persen (Sub-mode dari Standar) ──
@@ -109,6 +110,7 @@ window.vueApp = new Vue({
         // ── Riwayat ──
         riwayat: [],
         tampilkanRiwayat: true,
+        syncStatus: null,
     },
 
     mounted() {
@@ -175,6 +177,12 @@ window.vueApp = new Vue({
         // MODE: STANDAR - KALKULATOR
         // ════════════════════════════════════════════════════════
         stdDigit(d) {
+            // Reset exprText jika ini input setelah equals
+            if (this.standar.nextInputResetExpr) {
+                this.standar.exprText = '';
+                this.standar.nextInputResetExpr = false;
+            }
+            
             if (this.standar.overwrite) {
                 this.standar.display = d;
                 this.standar.overwrite = false;
@@ -270,6 +278,7 @@ window.vueApp = new Vue({
             
             if (result === 'Error') {
                 this.standar.display = 'Error';
+                this.standar.exprText = '';
             } else {
                 const operand2 = this.standar.display;
                 const resultStr = result.toString();
@@ -277,18 +286,24 @@ window.vueApp = new Vue({
                 
                 // Format pesan: "10 + 2 = 12"
                 const opSymbol = this.standar.operator === '/' ? '÷' : this.standar.operator === '*' ? '×' : this.standar.operator === '-' ? '−' : '+';
+                const formattedExpr = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' = ' + formatRibuan(resultStr);
                 const historyMsg = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' =';
+                
+                // Tampilkan format lengkap di exprText (di std-ekspresi)
+                this.standar.exprText = formattedExpr;
                 
                 this.tambahRiwayat(
                     historyMsg,
                     formatRibuan(this.standar.display)
                 );
+                
+                // Mark untuk reset exprText pada input selanjutnya
+                this.standar.nextInputResetExpr = true;
             }
             
             this.standar.stored = null;
             this.standar.operator = null;
             this.standar.overwrite = true;
-            this.standar.exprText = '';
         },
 
         stdKeydown(event) {
@@ -427,6 +442,93 @@ window.vueApp = new Vue({
                 this.riwayat = [];
                 localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
             }
+        },
+
+        // ════════════════════════════════════════════════════════
+        // CLOUD SYNC - EXPORT / IMPORT
+        // ════════════════════════════════════════════════════════
+        exportRiwayat() {
+            if (this.riwayat.length === 0) {
+                this.showSync('error', '❌ Tidak ada riwayat untuk di-export');
+                return;
+            }
+
+            const dataExport = {
+                timestamp: new Date().toISOString(),
+                version: '1.0',
+                count: this.riwayat.length,
+                data: this.riwayat
+            };
+
+            const jsonString = JSON.stringify(dataExport, null, 2);
+            const dataUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `kalkulator-riwayat-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            this.showSync('success', '✅ Riwayat berhasil di-export! File: kalkulator-riwayat-YYYY-MM-DD.json');
+            
+            // Salin ke clipboard juga
+            setTimeout(() => {
+                navigator.clipboard.writeText(jsonString).then(() => {
+                    this.showSync('info', '📋 Data juga sudah disalin ke clipboard. Bisa di-paste ke Google Drive, Notion, dll');
+                }).catch(() => {
+                    console.log('Clipboard copy failed');
+                });
+            }, 500);
+        },
+
+        importRiwayat() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        
+                        // Validasi format
+                        if (!importedData.data || !Array.isArray(importedData.data)) {
+                            throw new Error('Format file tidak valid');
+                        }
+
+                        // Tanya konfirmasi
+                        const count = importedData.data.length;
+                        if (confirm(`Import ${count} kalkulasi dari backup ini?\n\nCatatan: Ini akan menambah dengan riwayat yang sudah ada.`)) {
+                            // Merge riwayat
+                            const newRiwayat = [...importedData.data, ...this.riwayat];
+                            // Remove duplikat berdasarkan ID
+                            const uniqueIds = new Set();
+                            const merged = newRiwayat.filter(item => {
+                                if (uniqueIds.has(item.id)) return false;
+                                uniqueIds.add(item.id);
+                                return true;
+                            });
+
+                            this.riwayat = merged;
+                            localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+                            
+                            this.showSync('success', `✅ Berhasil import ${count} kalkulasi! Total sekarang: ${this.riwayat.length}`);
+                        }
+                    } catch (error) {
+                        this.showSync('error', `❌ Gagal import: ${error.message}`);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        },
+
+        showSync(type, message) {
+            this.syncStatus = { type, message };
+            setTimeout(() => {
+                this.syncStatus = null;
+            }, 5000);
         },
     }
 });
