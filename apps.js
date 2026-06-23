@@ -361,10 +361,16 @@ window.vueApp = new Vue({
                 const pct   = parseFloat(this.persen.pct.toString().replace(/\./g,'')) || 0;
                 const delta = harga * pct / 100;
                 const hasil = harga + delta;
+                
+                // Tentukan label berdasarkan nilai pct
+                const labelStatus = pct > 0 ? 'Naik' : pct < 0 ? 'Turun' : 'Tidak berubah';
+                const iconStatus = pct > 0 ? '📈' : pct < 0 ? '📉' : '➡️';
+                
                 this.hasilMulti = [
+                    { label: 'Nilai Awal:', nilai: 'Rp ' + formatRibuan(harga) },
                     { label: 'Nilai Baru:', nilai: 'Rp ' + formatRibuan(hasil) },
-                    { label: 'Perubahan:',  nilai: 'Rp ' + formatRibuan(delta) },
-                    { label: 'Naik/Turun:', nilai: (pct >= 0 ? '+' : '') + pct + '%' },
+                    { label: 'Perubahan:', nilai: (pct >= 0 ? '+' : '') + pct + '%' },
+                    { label: iconStatus + ' Status:', nilai: labelStatus },
                 ];
                 this.tambahRiwayat(
                     `Rp${formatRibuan(harga)} ${pct >= 0 ? 'naik' : 'turun'} ${Math.abs(pct)}% =`,

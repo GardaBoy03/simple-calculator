@@ -128,9 +128,9 @@
                                 @keydown.enter="playSound('click'); hitungPersen()" placeholder="50.000">
                         </div>
                         <div class="input-group">
-                            <label>Naik / Turun (%)</label>
+                            <label>Perubahan % (+ = naik, - = turun)</label>
                             <input type="text" inputmode="numeric" :value="persen.pct" @input="formatInputRibuan(persen, 'pct', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="15">
+                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="15 atau -15">
                         </div>
                     </div>
 
