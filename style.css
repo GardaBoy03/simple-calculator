@@ -223,27 +223,120 @@ input:focus, select:focus {
     border: 1px solid #f0f0f0;
 }
 
-/* ── Persen / Sub-Tabs (gaya tab kalkulator standar) ── */
+/* ── Persen / Sub-Tabs (Gaya Modern WhatsApp) ── */
 .persen-mode-tabs, .pangkat-mode-tabs {
-    display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px;
+    display: flex; 
+    gap: 0;
+    flex-wrap: wrap; 
+    margin-bottom: 14px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
+
 .persen-tab {
-    flex: 1; min-width: 70px;
-    padding: 9px 14px; min-height: 38px;
-    border: 1.5px solid #e2e2e2;
-    border-radius: 20px; background: #fff; color: #555;
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s ease; text-align: center;
+    flex: 1; 
+    min-width: 70px;
+    padding: 10px 12px;
+    min-height: 42px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #666;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
 }
-.persen-tab:hover { border-color: #25d9b7; color: #0b6e60; }
-.persen-tab:active { transform: scale(0.95); }
+
+.persen-tab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(37, 217, 183, 0);
+    border-radius: 10px;
+    transition: background 0.25s ease;
+    pointer-events: none;
+}
+
+.persen-tab:hover {
+    background: rgba(37, 217, 183, 0.1);
+    color: #0b6e60;
+}
+
+.persen-tab:hover::before {
+    background: rgba(37, 217, 183, 0.08);
+}
+
+.persen-tab:active {
+    transform: scale(0.98);
+}
+
 .persen-tab.active {
-    background: linear-gradient(135deg, #17a190, #0b6e60);
+    background: linear-gradient(135deg, #25d9b7 0%, #128c7e 100%);
     color: #fff;
-    border-color: transparent; font-weight: 700;
-    box-shadow: 0 4px 14px rgba(11,110,96,0.35);
+    font-weight: 700;
+    box-shadow: 
+        0 4px 12px rgba(18, 140, 126, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.persen-tab.active::before {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Animasi entrance untuk tab */
+@keyframes tabSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.persen-tab {
+    animation: tabSlideIn 0.4s ease backwards;
+}
+
+.persen-tab:nth-child(1) { animation-delay: 0.05s; }
+.persen-tab:nth-child(2) { animation-delay: 0.1s; }
+.persen-tab:nth-child(3) { animation-delay: 0.15s; }
+.persen-tab:nth-child(4) { animation-delay: 0.2s; }
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .persen-mode-tabs, .pangkat-mode-tabs {
+        gap: 0;
+        padding: 3px;
+    }
+    
+    .persen-tab {
+        padding: 8px 10px;
+        min-height: 40px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 360px) {
+    .persen-tab {
+        padding: 8px 8px;
+        min-height: 38px;
+        font-size: 10px;
+        min-width: 60px;
+    }
 }
 
 /* ── Catatan (Notes) Container ─────────────────────────────── */
@@ -525,8 +618,6 @@ input:focus, select:focus {
     .mode-select { font-size: 13px; padding: 0 38px 0 14px; height: 46px; }
     .mode-select-arrow { right: 15px; }
 
-    .persen-tab, .pangkat-mode-tabs .persen-tab { font-size: 11px; padding: 6px 6px; min-width: 64px; }
-
     .single-col-grid { padding: 12px; }
 
     .wa-bubble-hasil h1 { font-size: 22px; }
@@ -538,7 +629,6 @@ input:focus, select:focus {
 /* Layar sangat sempit (mis. iPhone SE, ~360px atau kurang) */
 @media (max-width: 360px) {
     .wa-chat-body { padding: 10px; }
-    .persen-tab { font-size: 10.5px; padding: 6px 4px; min-width: 56px; }
     .wa-bubble-hasil h1 { font-size: 19px; }
     .wa-bubble-hasil { min-width: 0; }
     .hasil-multi-row { gap: 8px; }
