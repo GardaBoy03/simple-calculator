@@ -1,7 +1,41 @@
 // ============================================================
-//  Kalkulator WhatsApp — apps.js  v7 (Persen di Standar)
-//  Mode: Standar (Kalkulator + Persen) | Riwayat
-//  Sound Effects & History Tab
+//  Proteksi: Disable Right-Click & Developer Tools
+// ============================================================
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    alert('❌ Right-click tidak diizinkan di halaman ini!');
+    return false;
+});
+
+// Disable F12
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'K')) {
+        e.preventDefault();
+        alert('⚠️ Developer Tools tidak dapat diakses!');
+        return false;
+    }
+});
+
+// Detect Developer Tools opened (via setTimeout)
+let devtools = { open: false };
+let lastCheck = Date.now();
+
+setInterval(() => {
+    const widthThreshold = window.outerWidth - window.innerWidth > 160;
+    const heightThreshold = window.outerHeight - window.innerHeight > 160;
+    
+    if ((widthThreshold || heightThreshold) && !devtools.open) {
+        devtools.open = true;
+        document.body.innerHTML = '<h1 style="text-align:center; margin-top:50px; color:#d9534f;">⚠️ Akses Developer Tools Terdeteksi!</h1><p style="text-align:center; font-size:18px;">Halaman telah diblokir untuk keamanan.</p>';
+    }
+}, 500);
+
+// ============================================================
+//  Kalkulator WhatsApp — apps.js  v8 (Operasi Berantai)
 // ============================================================
 
 // ─── Format Angka ────────────────────────────────────────────
