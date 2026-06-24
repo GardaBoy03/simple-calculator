@@ -711,6 +711,24 @@ input:focus, select:focus {
     color: #c9302c;
 }
 
+.btn-drive {
+    background: linear-gradient(135deg, #4285f4, #1a73e8);
+}
+
+.btn-drive-connected {
+    background: linear-gradient(135deg, #34a853, #1e7e34);
+}
+
+.drive-info {
+    font-size: 12px;
+    color: #1565c0;
+    background: #e8f0fe;
+    border-left: 3px solid #4285f4;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 8px 0;
+}
+
 .sync-status {
     padding: 10px 12px;
     border-radius: 6px;

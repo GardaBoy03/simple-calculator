@@ -145,12 +145,31 @@ window.vueApp = new Vue({
         riwayat: [],
         tampilkanRiwayat: true,
         syncStatus: null,
+
+        // ── Google Drive Sync ──
+        driveConnected: false,
+        driveFolderName: 'Kalkulator WhatsApp - Riwayat',
+        driveFolderId: null,
+        driveAccessToken: null,
+        driveTokenClient: null,
     },
 
     mounted() {
         const savedRiwayat = localStorage.getItem('wa_kalkulator_riwayat');
-        if (savedRiwayat) { 
-            try { this.riwayat = JSON.parse(savedRiwayat); } catch(e) {} 
+        if (savedRiwayat) {
+            try { this.riwayat = JSON.parse(savedRiwayat); } catch(e) {}
+        }
+
+        const savedFolderId = localStorage.getItem('wa_kalkulator_drive_folder_id');
+        if (savedFolderId) this.driveFolderId = savedFolderId;
+
+        this.initDriveTokenClient();
+
+        // Coba sambungkan ulang otomatis (silent) jika user sudah pernah konek sebelumnya
+        if (localStorage.getItem('wa_kalkulator_drive_connected') === '1') {
+            this.$nextTick(() => {
+                setTimeout(() => this.connectDrive(true), 500);
+            });
         }
     },
 
@@ -407,15 +426,22 @@ window.vueApp = new Vue({
             const jam = String(now.getHours()).padStart(2, '0');
             const menit = String(now.getMinutes()).padStart(2, '0');
             const waktu = jam + ':' + menit;
-            
-            this.riwayat.unshift({
+
+            const item = {
                 id: Date.now(),
                 teks: teks,
                 total: total,
                 waktu: waktu,
-            });
-            
+            };
+
+            this.riwayat.unshift(item);
+
             localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+
+            // Auto-save ke Google Drive sebagai file .txt (jika sudah terhubung)
+            if (this.driveConnected) {
+                this.simpanItemKeDrive(item);
+            }
         },
 
         hapusSatu(id) {
@@ -515,6 +541,195 @@ window.vueApp = new Vue({
             setTimeout(() => {
                 this.syncStatus = null;
             }, 5000);
+        },
+
+        // ════════════════════════════════════════════════════════
+        // GOOGLE DRIVE — AUTO SAVE OTOMATIS (.txt per kalkulasi)
+        // ════════════════════════════════════════════════════════
+        //
+        // CARA SETUP (sekali saja):
+        // 1. Buka https://console.cloud.google.com/ -> buat project baru
+        // 2. Aktifkan "Google Drive API" (menu API & Services -> Library)
+        // 3. Buat OAuth Client ID (tipe: Web application)
+        //    - Authorized JavaScript origins: isi dengan domain tempat halaman ini dihosting
+        //      (contoh: https://namadomainanda.com atau http://localhost:5500 saat testing)
+        // 4. Tempel Client ID ke variabel DRIVE_CLIENT_ID di bawah ini
+        // ════════════════════════════════════════════════════════
+
+        initDriveTokenClient() {
+            const DRIVE_CLIENT_ID = '323461411376-2bsnhdk55amd5qm7c2p4jf8cqbfn2rl7.apps.googleusercontent.com';
+            this.DRIVE_CLIENT_ID = DRIVE_CLIENT_ID;
+
+            const trySetup = () => {
+                if (typeof google === 'undefined' || !google.accounts) {
+                    setTimeout(trySetup, 300);
+                    return;
+                }
+                this.standar.exprText = this.standar.exprText; // no-op (Vue reactivity nudge)
+                this.driveTokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: DRIVE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/drive.file',
+                    callback: (response) => {
+                        if (response && response.access_token) {
+                            this.driveAccessToken = response.access_token;
+                            this.onDriveTokenReady();
+                        } else {
+                            this.showSync('error', '❌ Gagal mendapatkan izin akses Google Drive');
+                        }
+                    },
+                });
+            };
+            trySetup();
+        },
+
+        toggleDrive() {
+            if (this.driveConnected) {
+                if (confirm('Putuskan koneksi Google Drive?\n\nFile yang sudah tersimpan di Drive tidak akan terhapus.')) {
+                    this.disconnectDrive();
+                }
+            } else {
+                this.connectDrive(false);
+            }
+        },
+
+        connectDrive(silent) {
+            if (!this.driveTokenClient) {
+                this.showSync('error', '❌ Google Drive belum siap, coba lagi sebentar');
+                return;
+            }
+
+            if (this.DRIVE_CLIENT_ID && this.DRIVE_CLIENT_ID.indexOf('GANTI_DENGAN_CLIENT_ID') === 0) {
+                if (!silent) {
+                    this.showSync('error', '❌ Client ID Google belum diisi. Lihat komentar di apps.js bagian initDriveTokenClient()');
+                }
+                return;
+            }
+
+            if (!silent) this.showSync('info', '🔐 Membuka jendela login Google...');
+
+            // 'silent' mencoba tanpa menampilkan consent screen jika sesi masih ada;
+            // jika gagal, browser akan otomatis tetap menampilkan popup saat klik manual.
+            this.driveTokenClient.requestAccessToken({ prompt: silent ? '' : 'consent' });
+        },
+
+        disconnectDrive() {
+            if (this.driveAccessToken && typeof google !== 'undefined' && google.accounts) {
+                google.accounts.oauth2.revoke(this.driveAccessToken, () => {});
+            }
+            this.driveConnected = false;
+            this.driveAccessToken = null;
+            localStorage.removeItem('wa_kalkulator_drive_connected');
+            this.showSync('info', '🔌 Koneksi Google Drive diputus');
+        },
+
+        async onDriveTokenReady() {
+            try {
+                await this.pastikanFolderDrive();
+                this.driveConnected = true;
+                localStorage.setItem('wa_kalkulator_drive_connected', '1');
+                this.showSync('success', `✅ Terhubung ke Drive! Folder "${this.driveFolderName}" siap digunakan`);
+            } catch (err) {
+                console.error(err);
+                this.showSync('error', '❌ Gagal menyiapkan folder Drive: ' + err.message);
+            }
+        },
+
+        driveFetch(url, options = {}) {
+            options.headers = Object.assign({}, options.headers, {
+                Authorization: 'Bearer ' + this.driveAccessToken,
+            });
+            return fetch(url, options).then(async (res) => {
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(`Drive API error (${res.status}): ${errText}`);
+                }
+                return res.status === 204 ? null : res.json();
+            });
+        },
+
+        // Cari folder berdasarkan nama; jika belum ada, buat baru
+        async pastikanFolderDrive() {
+            if (this.driveFolderId) {
+                // Verifikasi folder masih ada
+                try {
+                    await this.driveFetch(
+                        `https://www.googleapis.com/drive/v3/files/${this.driveFolderId}?fields=id,trashed`
+                    );
+                    return this.driveFolderId;
+                } catch (e) {
+                    this.driveFolderId = null; // folder hilang/terhapus, buat ulang
+                }
+            }
+
+            const q = encodeURIComponent(
+                `name='${this.driveFolderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
+            );
+            const searchRes = await this.driveFetch(
+                `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`
+            );
+
+            if (searchRes.files && searchRes.files.length > 0) {
+                this.driveFolderId = searchRes.files[0].id;
+            } else {
+                const createRes = await this.driveFetch(
+                    'https://www.googleapis.com/drive/v3/files?fields=id',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: this.driveFolderName,
+                            mimeType: 'application/vnd.google-apps.folder',
+                        }),
+                    }
+                );
+                this.driveFolderId = createRes.id;
+            }
+
+            localStorage.setItem('wa_kalkulator_drive_folder_id', this.driveFolderId);
+            return this.driveFolderId;
+        },
+
+        // Simpan satu item riwayat sebagai file .txt baru di folder Drive
+        async simpanItemKeDrive(item) {
+            try {
+                const folderId = await this.pastikanFolderDrive();
+
+                const namaFile = `kalkulasi-${item.id}.txt`;
+                const isiFile =
+                    `Kalkulator WhatsApp - Riwayat Perhitungan\n` +
+                    `==========================================\n\n` +
+                    `Waktu   : ${item.waktu}\n` +
+                    `Operasi : ${item.teks}\n` +
+                    `Hasil   : ${item.total}\n`;
+
+                const metadata = {
+                    name: namaFile,
+                    parents: [folderId],
+                    mimeType: 'text/plain',
+                };
+
+                const boundary = '-------kalkulatorwa' + Date.now();
+                const body =
+                    `--${boundary}\r\n` +
+                    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+                    JSON.stringify(metadata) + `\r\n` +
+                    `--${boundary}\r\n` +
+                    `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
+                    isiFile + `\r\n` +
+                    `--${boundary}--`;
+
+                await this.driveFetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+                        body: body,
+                    }
+                );
+            } catch (err) {
+                console.error('Gagal simpan ke Drive:', err);
+                this.showSync('error', '⚠️ Gagal auto-save ke Drive: ' + err.message);
+            }
         },
     }
 });

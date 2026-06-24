@@ -79,10 +79,20 @@
                         <div class="wa-history-header">
                             <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
                             <div class="wa-history-actions">
-                                <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke Cloud">☁️ Export</button>
-                                <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari Cloud">📥 Import</button>
+                                <button type="button"
+                                        class="btn-history-action btn-drive"
+                                        :class="{ 'btn-drive-connected': driveConnected }"
+                                        @click="playSound('click'); toggleDrive()"
+                                        :title="driveConnected ? 'Putuskan koneksi Drive' : 'Hubungkan ke Google Drive'">
+                                    {{ driveConnected ? '🟢 Drive Terhubung' : '☁️ Hubungkan Drive' }}
+                                </button>
+                                <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke file lokal">💾 Export</button>
+                                <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari file lokal">📥 Import</button>
                                 <button type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
                             </div>
+                        </div>
+                        <div v-if="driveConnected" class="drive-info">
+                            📁 Otomatis tersimpan ke folder Drive: <b>{{ driveFolderName }}</b>
                         </div>
                         <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
                             {{ syncStatus.message }}
@@ -104,6 +114,8 @@
 </div>
 
 <script src="vue.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
 <script src="apps.js"></script>
 </body>
 </html>
