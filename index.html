@@ -34,133 +34,40 @@
             <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hitung • <b>Esc</b> untuk reset</p>
 
             <div v-if="modeAktif === 'standar'">
-                <!-- Sub-Mode Tabs untuk Standar (Kalkulator + Persen) -->
-                <div class="persen-mode-tabs">
-                    <button type="button" class="persen-tab" 
-                        :class="{ active: standar.subMode === 'kalkulator' }"
-                        @click="playSound('click'); standar.subMode = 'kalkulator'">
-                        🔢 Kalkulator
-                    </button>
-                    <button type="button" class="persen-tab"
-                        :class="{ active: standar.subMode === 'persen' }"
-                        @click="playSound('click'); standar.subMode = 'persen'; resetHasil()">
-                        % Persen
-                    </button>
-                </div>
-
                 <!-- Mode Kalkulator -->
-                <div v-if="standar.subMode === 'kalkulator'">
-                    <div class="std-kalkulator" tabindex="0" @keydown="stdKeydown">
-                        <div class="std-layar">
-                            <div class="std-ekspresi">{{ standar.exprText || '\u00A0' }}</div>
-                            <div class="std-display">{{ standarDisplayFormatted }}</div>
-                        </div>
-                        <div class="std-keypad">
-                            <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdClear()">AC</button>
-                            <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdBackspace()">⌫</button>
-                            <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdPercent()">%</button>
-                            <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('/')">÷</button>
-
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('7')">7</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('8')">8</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('9')">9</button>
-                            <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('*')">×</button>
-
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('4')">4</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('5')">5</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('6')">6</button>
-                            <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('-')">−</button>
-
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('1')">1</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('2')">2</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('3')">3</button>
-                            <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('+')">+</button>
-
-                            <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdToggleSign()">±</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDigit('0')">0</button>
-                            <button type="button" class="std-key" @click="playSound('click'); stdDecimal()">,</button>
-                            <button type="button" class="std-key std-key-eq" @click="playSound('click'); stdEquals()">=</button>
-                        </div>
+                <div class="std-kalkulator" tabindex="0" @keydown="stdKeydown">
+                    <div class="std-layar">
+                        <div class="std-ekspresi">{{ standar.exprText || '\u00A0' }}</div>
+                        <div class="std-display">{{ standarDisplayFormatted }}</div>
                     </div>
-                    <p class="mode-hint">💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja</p>
-                </div>
+                    <div class="std-keypad">
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdClear()">AC</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdBackspace()">⌫</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdPercent()">%</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('/')">÷</button>
 
-                <!-- Mode Persen dalam Standar -->
-                <div v-if="standar.subMode === 'persen'">
-                    <div class="persen-mode-tabs">
-                        <button type="button" v-for="pt in persenTabs" :key="pt.id"
-                            :class="['persen-tab', { active: persen.subMode === pt.id }]"
-                            @click="playSound('click'); persen.subMode = pt.id; resetHasil()">
-                            {{ pt.label }}
-                        </button>
-                    </div>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('7')">7</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('8')">8</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('9')">9</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('*')">×</button>
 
-                    <div v-if="persen.subMode === 'diskon'" class="single-col-grid">
-                        <div class="input-group">
-                            <label>Harga Asal (Rp)</label>
-                            <input type="text" inputmode="numeric" :value="persen.harga" @input="formatInputRibuan(persen, 'harga', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="100.000">
-                        </div>
-                        <div class="input-group">
-                            <label>Diskon (%)</label>
-                            <input type="text" inputmode="numeric" :value="persen.pct" @input="formatInputRibuan(persen, 'pct', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="20">
-                        </div>
-                    </div>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('4')">4</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('5')">5</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('6')">6</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('-')">−</button>
 
-                    <div v-if="persen.subMode === 'dari'" class="single-col-grid">
-                        <div class="input-group">
-                            <label>Nilai</label>
-                            <input type="text" inputmode="numeric" :value="persen.nilai" @input="formatInputRibuan(persen, 'nilai', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="25">
-                        </div>
-                        <div class="input-group">
-                            <label>Dari Total</label>
-                            <input type="text" inputmode="numeric" :value="persen.total" @input="formatInputRibuan(persen, 'total', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="200">
-                        </div>
-                    </div>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('1')">1</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('2')">2</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('3')">3</button>
+                        <button type="button" class="std-key std-key-op" @click="playSound('click'); stdOperator('+')">+</button>
 
-                    <div v-if="persen.subMode === 'naik'" class="single-col-grid">
-                        <div class="input-group">
-                            <label>Nilai Asal</label>
-                            <input type="text" inputmode="numeric" :value="persen.harga" @input="formatInputRibuan(persen, 'harga', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="50.000">
-                        </div>
-                        <div class="input-group">
-                            <label>Perubahan % (+ = naik, - = turun)</label>
-                            <input type="text" inputmode="numeric" :value="persen.pct" @input="formatInputRibuan(persen, 'pct', $event)"
-                                @keydown.enter="playSound('click'); hitungPersen()" placeholder="15 atau -15">
-                        </div>
-                    </div>
-
-                    <div v-if="persen.subMode === 'ppn'">
-                        <div class="persen-mode-tabs">
-                            <button type="button" v-for="pm in ppnModeTabs" :key="pm.id"
-                                :class="['persen-tab', { active: persen.ppnMode === pm.id }]"
-                                @click="playSound('click'); persen.ppnMode = pm.id; resetHasil()">
-                                {{ pm.label }}
-                            </button>
-                        </div>
-                        <div class="single-col-grid">
-                            <div class="input-group">
-                                <label>Harga (Rp)</label>
-                                <input type="text" inputmode="numeric" :value="persen.ppnHarga" @input="formatInputRibuan(persen, 'ppnHarga', $event)"
-                                    @keydown.enter="playSound('click'); hitungPersen()" placeholder="1.000.000">
-                            </div>
-                            <div class="input-group">
-                                <label>Tarif PPN (%) — default 11%</label>
-                                <input type="text" inputmode="numeric" :value="persen.ppnTarif" @input="formatInputRibuan(persen, 'ppnTarif', $event)"
-                                    @keydown.enter="playSound('click'); hitungPersen()" placeholder="11">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="wa-action-buttons">
-                        <button type="button" @click="playSound('click'); hitungPersen()" class="btn-hitung">Hitung</button>
-                        <button type="button" @click="playSound('click'); resetPersen()" class="btn-reset">Reset</button>
+                        <button type="button" class="std-key std-key-fn" @click="playSound('click'); stdToggleSign()">±</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDigit('0')">0</button>
+                        <button type="button" class="std-key" @click="playSound('click'); stdDecimal()">,</button>
+                        <button type="button" class="std-key std-key-eq" @click="playSound('click'); stdEquals()">=</button>
                     </div>
                 </div>
+                <p class="mode-hint">💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja</p>
             </div>
 
             <div v-if="modeAktif === 'riwayat'">
@@ -189,20 +96,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="wa-bubble-container" v-if="modeAktif === 'standar' && standar.subMode === 'persen'">
-                <div class="wa-bubble-hasil">
-                    <span class="wa-label-hasil">Hasil:</span>
-                    <div v-if="hasilMulti.length > 0">
-                        <div v-for="(h, i) in hasilMulti" :key="i" class="hasil-multi-row">
-                            <span class="hasil-multi-label">{{ h.label }}</span>
-                            <span class="hasil-multi-val">{{ h.nilai }}</span>
-                        </div>
-                    </div>
-                    <h1 v-else>{{ tampilHasil }}</h1>
-                    <span class="wa-time">Baru saja ✓✓</span>
                 </div>
             </div>
 

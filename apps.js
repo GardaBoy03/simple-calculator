@@ -91,9 +91,8 @@ window.vueApp = new Vue({
             { id: 'riwayat',  label: '🕒 Riwayat' },
         ],
 
-        // ── Standar (dengan Sub-Mode: Kalkulator & Persen) ──
+        // ── Standar (Kalkulator) ──
         standar: {
-            subMode: 'kalkulator',
             // Kalkulator
             display: '0',
             stored: null,
@@ -102,22 +101,6 @@ window.vueApp = new Vue({
             exprText: '',
             nextInputResetExpr: false,
         },
-
-        // ── Persen (Sub-mode dari Standar) ──
-        persen: {
-            subMode: 'diskon', harga: '', pct: '', nilai: '', total: '',
-            ppnMode: 'tambah', ppnHarga: '', ppnTarif: '11',
-        },
-        persenTabs: [
-            { id: 'diskon', label: '🏷️ Diskon' },
-            { id: 'dari',   label: '📊 % dari' },
-            { id: 'naik',   label: '📈 Naik/Turun' },
-            { id: 'ppn',    label: '🧾 PPN' },
-        ],
-        ppnModeTabs: [
-            { id: 'tambah', label: 'Tambah PPN' },
-            { id: 'cari',   label: 'Cari DPP' },
-        ],
 
         // ── Hasil ──
         hasilKalkulasi: 0,
@@ -349,105 +332,6 @@ window.vueApp = new Vue({
             else if (k === 'Escape') { this.stdClear(); }
             else if (k === 'Backspace') { this.stdBackspace(); }
             else if (k === '%') { this.stdPercent(); }
-        },
-
-        // ════════════════════════════════════════════════════════
-        // MODE: STANDAR - PERSEN
-        // ════════════════════════════════════════════════════════
-        hitungPersen() {
-            this.hasilMulti = [];
-            const sub = this.persen.subMode;
-
-            if (sub === 'diskon') {
-                const harga = parseFloat(this.persen.harga.toString().replace(/\./g,'')) || 0;
-                const pct   = parseFloat(this.persen.pct.toString().replace(/\./g,'')) || 0;
-                const hemat = harga * pct / 100;
-                const bayar = harga - hemat;
-                this.hasilMulti = [
-                    { label: 'Harga Bayar:', nilai: 'Rp ' + formatRibuan(bayar) },
-                    { label: 'Hemat:',       nilai: 'Rp ' + formatRibuan(hemat) },
-                    { label: 'Diskon:',      nilai: pct + '%' },
-                ];
-                this.tambahRiwayat(
-                    `Diskon ${pct}% dari Rp${formatRibuan(harga)} =`,
-                    'Rp ' + formatRibuan(bayar)
-                );
-
-            } else if (sub === 'dari') {
-                const nilai = parseFloat(this.persen.nilai.toString().replace(/\./g,'')) || 0;
-                const total = parseFloat(this.persen.total.toString().replace(/\./g,'')) || 0;
-                if (total === 0) { this.hasilKalkulasi = 'Total ≠ 0'; return; }
-                const pct = (nilai / total) * 100;
-                this.hasilMulti = [
-                    { label: 'Persentase:', nilai: formatDesimal(pct) + '%' },
-                    { label: 'Dari total:', nilai: formatRibuan(total) },
-                ];
-                this.tambahRiwayat(
-                    `${formatRibuan(nilai)} dari Rp${formatRibuan(total)} =`,
-                    formatDesimal(pct) + '%'
-                );
-
-            } else if (sub === 'naik') {
-                const harga = parseFloat(this.persen.harga.toString().replace(/\./g,'')) || 0;
-                const pct   = parseFloat(this.persen.pct.toString().replace(/\./g,'')) || 0;
-                const delta = harga * pct / 100;
-                const hasil = harga + delta;
-                
-                // Tentukan label berdasarkan nilai pct
-                const labelStatus = pct > 0 ? 'Naik' : pct < 0 ? 'Turun' : 'Tidak berubah';
-                const iconStatus = pct > 0 ? '📈' : pct < 0 ? '📉' : '➡️';
-                
-                this.hasilMulti = [
-                    { label: 'Nilai Awal:', nilai: 'Rp ' + formatRibuan(harga) },
-                    { label: 'Nilai Baru:', nilai: 'Rp ' + formatRibuan(hasil) },
-                    { label: 'Perubahan:', nilai: (pct >= 0 ? '+' : '') + pct + '%' },
-                    { label: iconStatus + ' Status:', nilai: labelStatus },
-                ];
-                this.tambahRiwayat(
-                    `Rp${formatRibuan(harga)} ${pct >= 0 ? 'naik' : 'turun'} ${Math.abs(pct)}% =`,
-                    'Rp ' + formatRibuan(hasil)
-                );
-
-            } else if (sub === 'ppn') {
-                const harga = parseFloat(this.persen.ppnHarga.toString().replace(/\./g,'')) || 0;
-                const tarif = parseFloat(this.persen.ppnTarif.toString().replace(/\./g,'')) || 0;
-
-                if (this.persen.ppnMode === 'tambah') {
-                    const ppn = harga * tarif / 100;
-                    const total = harga + ppn;
-                    this.hasilMulti = [
-                        { label: 'Harga:',      nilai: 'Rp ' + formatRibuan(harga) },
-                        { label: 'PPN:',        nilai: 'Rp ' + formatRibuan(ppn) },
-                        { label: 'Total + PPN:', nilai: 'Rp ' + formatRibuan(total) },
-                    ];
-                    this.tambahRiwayat(
-                        `Rp${formatRibuan(harga)} + PPN ${tarif}% =`,
-                        'Rp ' + formatRibuan(total)
-                    );
-                } else {
-                    const faktor = 1 + tarif / 100;
-                    const dpp = harga / faktor;
-                    const ppn = harga - dpp;
-                    this.hasilMulti = [
-                        { label: 'Total Harga:',nilai: 'Rp ' + formatRibuan(harga) },
-                        { label: 'DPP:',        nilai: 'Rp ' + formatRibuan(dpp) },
-                        { label: 'PPN:',        nilai: 'Rp ' + formatRibuan(ppn) },
-                    ];
-                    this.tambahRiwayat(
-                        `Cari DPP dari Rp${formatRibuan(harga)} (PPN ${tarif}%) =`,
-                        'Rp ' + formatRibuan(dpp)
-                    );
-                }
-            }
-        },
-
-        resetPersen() {
-            this.persen = {
-                subMode: 'diskon', harga: '', pct: '', nilai: '', total: '',
-                ppnMode: 'tambah', ppnHarga: '', ppnTarif: '11',
-            };
-            this.hasilKalkulasi = 0;
-            this.hasilMulti = [];
         },
 
         // ════════════════════════════════════════════════════════
