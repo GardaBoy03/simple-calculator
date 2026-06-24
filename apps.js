@@ -99,6 +99,7 @@ window.vueApp = new Vue({
             operator: null,
             overwrite: true,
             exprText: '',
+            exprFull: '',  // Menyimpan ekspresi lengkap berantai
             nextInputResetExpr: false,
         },
 
@@ -191,9 +192,10 @@ window.vueApp = new Vue({
         // MODE: STANDAR - KALKULATOR
         // ════════════════════════════════════════════════════════
         stdDigit(d) {
-            // Reset exprText jika ini input setelah equals
+            // Reset exprText dan exprFull jika ini input setelah equals
             if (this.standar.nextInputResetExpr) {
                 this.standar.exprText = '';
+                this.standar.exprFull = '';
                 this.standar.nextInputResetExpr = false;
             }
             
@@ -235,6 +237,7 @@ window.vueApp = new Vue({
             this.standar.operator = null;
             this.standar.overwrite = true;
             this.standar.exprText = '';
+            this.standar.exprFull = '';
         },
 
         stdToggleSign() {
@@ -246,18 +249,35 @@ window.vueApp = new Vue({
 
         stdOperator(op) {
             let current = parseFloat(this.standar.display.replace(',', '.'));
+            const opSymbol = op === '/' ? '÷' : op === '*' ? '×' : op === '-' ? '−' : '+';
             
+            // Jika ada operator sebelumnya, hitung dulu (untuk operasi berantai)
             if (this.standar.operator !== null && !this.standar.overwrite) {
-                current = this.stdCalcInternal();
+                const prevResult = this.stdCalcInternal();
+                const prevOpSymbol = this.standar.operator === '/' ? '÷' : this.standar.operator === '*' ? '×' : this.standar.operator === '-' ? '−' : '+';
+                
+                // Build ekspresi lengkap: "2 + 2"
+                if (this.standar.exprFull === '') {
+                    // Operasi pertama
+                    this.standar.exprFull = formatRibuan(this.standar.stored.toString()) + ' ' + prevOpSymbol + ' ' + formatRibuan(current.toString());
+                } else {
+                    // Operasi selanjutnya (berantai)
+                    this.standar.exprFull += ' ' + prevOpSymbol + ' ' + formatRibuan(current.toString());
+                }
+                
+                current = prevResult;
                 this.standar.display = current.toString();
+            } else if (this.standar.exprFull === '' && this.standar.operator === null) {
+                // Operator pertama kali ditekan
+                this.standar.exprFull = formatRibuan(current.toString());
             }
             
             this.standar.stored = current;
             this.standar.operator = op;
             this.standar.overwrite = true;
             
-            const opSymbol = op === '/' ? '÷' : op === '*' ? '×' : op === '-' ? '−' : '+';
-            this.standar.exprText = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol;
+            // Display untuk dilihat saat input angka berikutnya
+            this.standar.exprText = this.standar.exprFull + ' ' + opSymbol;
         },
 
         stdPercent() {
@@ -298,13 +318,23 @@ window.vueApp = new Vue({
                 const resultStr = result.toString();
                 this.standar.display = resultStr;
                 
-                // Format pesan: "10 + 2 = 12"
+                // Format pesan untuk operasi berantai
                 const opSymbol = this.standar.operator === '/' ? '÷' : this.standar.operator === '*' ? '×' : this.standar.operator === '-' ? '−' : '+';
-                const formattedExpr = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' = ' + formatRibuan(resultStr);
-                const historyMsg = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' =';
+                
+                // Jika ada ekspresi berantai (exprFull), gunakan itu
+                let fullExpr, historyMsg;
+                if (this.standar.exprFull !== '') {
+                    // Operasi berantai: "2 + 2 + 2 = 6"
+                    fullExpr = this.standar.exprFull + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' = ' + formatRibuan(resultStr);
+                    historyMsg = this.standar.exprFull + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' =';
+                } else {
+                    // Operasi sederhana: "10 + 2 = 12"
+                    fullExpr = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' = ' + formatRibuan(resultStr);
+                    historyMsg = formatRibuan(this.standar.stored.toString()) + ' ' + opSymbol + ' ' + formatRibuan(operand2) + ' =';
+                }
                 
                 // Tampilkan format lengkap di exprText (di std-ekspresi)
-                this.standar.exprText = formattedExpr;
+                this.standar.exprText = fullExpr;
                 
                 this.tambahRiwayat(
                     historyMsg,
@@ -318,6 +348,7 @@ window.vueApp = new Vue({
             this.standar.stored = null;
             this.standar.operator = null;
             this.standar.overwrite = true;
+            this.standar.exprFull = '';  // Reset ekspresi
         },
 
         stdKeydown(event) {
