@@ -72,38 +72,37 @@
 
             <div v-if="modeAktif === 'riwayat'">
                 <div class="wa-history-full">
+                    <div class="wa-history-header">
+                        <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
+                        <div class="wa-history-actions">
+                            <button type="button"
+                                    class="btn-history-action btn-drive"
+                                    :class="{ 'btn-drive-connected': driveConnected }"
+                                    @click="playSound('click'); toggleDrive()"
+                                    :title="driveConnected ? 'Putuskan koneksi Drive' : 'Hubungkan ke Google Drive'">
+                                {{ driveConnected ? '🟢 Drive Terhubung' : '☁️ Hubungkan Drive' }}
+                            </button>
+                            <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke file lokal">💾 Export</button>
+                            <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari file lokal">📥 Import</button>
+                            <button v-if="riwayat.length > 0" type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                        </div>
+                    </div>
+                    <div v-if="driveConnected" class="drive-info">
+                        📁 Otomatis tersimpan ke folder Drive: <b>{{ driveFolderName }}</b>
+                    </div>
+                    <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
+                        {{ syncStatus.message }}
+                    </div>
+
                     <div v-if="riwayat.length === 0" class="wa-history-empty">
                         <p>📭 Belum ada riwayat kalkulasi</p>
                     </div>
-                    <div v-else>
-                        <div class="wa-history-header">
-                            <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
-                            <div class="wa-history-actions">
-                                <button type="button"
-                                        class="btn-history-action btn-drive"
-                                        :class="{ 'btn-drive-connected': driveConnected }"
-                                        @click="playSound('click'); toggleDrive()"
-                                        :title="driveConnected ? 'Putuskan koneksi Drive' : 'Hubungkan ke Google Drive'">
-                                    {{ driveConnected ? '🟢 Drive Terhubung' : '☁️ Hubungkan Drive' }}
-                                </button>
-                                <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke file lokal">💾 Export</button>
-                                <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari file lokal">📥 Import</button>
-                                <button type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
-                            </div>
-                        </div>
-                        <div v-if="driveConnected" class="drive-info">
-                            📁 Otomatis tersimpan ke folder Drive: <b>{{ driveFolderName }}</b>
-                        </div>
-                        <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
-                            {{ syncStatus.message }}
-                        </div>
-                        <div class="wa-history-full-list">
-                            <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
-                                <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
-                                <span class="wa-history-text">{{ item.teks }}</span>
-                                <strong class="wa-history-total">{{ item.total }}</strong>
-                                <span class="wa-history-time">{{ item.waktu }} ✓</span>
-                            </div>
+                    <div v-else class="wa-history-full-list">
+                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
+                            <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
+                            <span class="wa-history-text">{{ item.teks }}</span>
+                            <strong class="wa-history-total">{{ item.total }}</strong>
+                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
                         </div>
                     </div>
                 </div>

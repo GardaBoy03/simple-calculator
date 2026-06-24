@@ -465,25 +465,33 @@ window.vueApp = new Vue({
                 return;
             }
 
-            const dataExport = {
-                timestamp: new Date().toISOString(),
-                version: '1.0',
-                count: this.riwayat.length,
-                data: this.riwayat
-            };
+            const SEP = '----------------------------------------';
+            const lines = [];
+            lines.push('KALKULATOR WHATSAPP - RIWAYAT EXPORT');
+            lines.push(`Timestamp: ${new Date().toISOString()}`);
+            lines.push(`Jumlah: ${this.riwayat.length}`);
+            lines.push('========================================');
 
-            const jsonString = JSON.stringify(dataExport, null, 2);
-            const dataUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonString);
+            this.riwayat.forEach(item => {
+                lines.push(`ID: ${item.id}`);
+                lines.push(`Teks: ${item.teks}`);
+                lines.push(`Hasil: ${item.total}`);
+                lines.push(`Waktu: ${item.waktu}`);
+                lines.push(SEP);
+            });
+
+            const txtString = lines.join('\n');
+            const dataUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txtString);
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = `kalkulator-riwayat-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `kalkulator-riwayat-${new Date().toISOString().split('T')[0]}.txt`;
             link.click();
 
-            this.showSync('success', '✅ Riwayat berhasil di-export! File: kalkulator-riwayat-YYYY-MM-DD.json');
-            
+            this.showSync('success', '✅ Riwayat berhasil di-export! File: kalkulator-riwayat-YYYY-MM-DD.txt');
+
             // Salin ke clipboard juga
             setTimeout(() => {
-                navigator.clipboard.writeText(jsonString).then(() => {
+                navigator.clipboard.writeText(txtString).then(() => {
                     this.showSync('info', '📋 Data juga sudah disalin ke clipboard. Bisa di-paste ke Google Drive, Notion, dll');
                 }).catch(() => {
                     console.log('Clipboard copy failed');
@@ -494,7 +502,7 @@ window.vueApp = new Vue({
         importRiwayat() {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.json';
+            input.accept = '.txt';
             input.onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -502,18 +510,17 @@ window.vueApp = new Vue({
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
-                        const importedData = JSON.parse(event.target.result);
-                        
-                        // Validasi format
-                        if (!importedData.data || !Array.isArray(importedData.data)) {
-                            throw new Error('Format file tidak valid');
+                        const importedItems = this.parseRiwayatTxt(event.target.result);
+
+                        if (importedItems.length === 0) {
+                            throw new Error('Tidak ada data yang dikenali di file ini');
                         }
 
                         // Tanya konfirmasi
-                        const count = importedData.data.length;
+                        const count = importedItems.length;
                         if (confirm(`Import ${count} kalkulasi dari backup ini?\n\nCatatan: Ini akan menambah dengan riwayat yang sudah ada.`)) {
                             // Merge riwayat
-                            const newRiwayat = [...importedData.data, ...this.riwayat];
+                            const newRiwayat = [...importedItems, ...this.riwayat];
                             // Remove duplikat berdasarkan ID
                             const uniqueIds = new Set();
                             const merged = newRiwayat.filter(item => {
@@ -524,7 +531,7 @@ window.vueApp = new Vue({
 
                             this.riwayat = merged;
                             localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
-                            
+
                             this.showSync('success', `✅ Berhasil import ${count} kalkulasi! Total sekarang: ${this.riwayat.length}`);
                         }
                     } catch (error) {
@@ -534,6 +541,30 @@ window.vueApp = new Vue({
                 reader.readAsText(file);
             };
             input.click();
+        },
+
+        // Parser untuk format .txt hasil export riwayat
+        parseRiwayatTxt(text) {
+            const blocks = text.split('----------------------------------------');
+            const items = [];
+
+            blocks.forEach(block => {
+                const idMatch = block.match(/ID:\s*(.+)/);
+                const teksMatch = block.match(/Teks:\s*(.+)/);
+                const hasilMatch = block.match(/Hasil:\s*(.+)/);
+                const waktuMatch = block.match(/Waktu:\s*(.+)/);
+
+                if (idMatch && teksMatch && hasilMatch) {
+                    items.push({
+                        id: idMatch[1].trim(),
+                        teks: teksMatch[1].trim(),
+                        total: hasilMatch[1].trim(),
+                        waktu: waktuMatch ? waktuMatch[1].trim() : ''
+                    });
+                }
+            });
+
+            return items;
         },
 
         showSync(type, message) {
