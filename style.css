@@ -59,6 +59,34 @@ body {
 .wa-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
 .wa-status { font-size: 12px; color: #cfd8dc; }
 
+/* ── Language Switch ─────────────────────────────────────── */
+.wa-lang-switch {
+    display: flex;
+    gap: 3px;
+    background: rgba(255,255,255,0.14);
+    border-radius: 20px;
+    padding: 3px;
+    flex-shrink: 0;
+}
+.wa-lang-btn {
+    border: none;
+    background: transparent;
+    color: #cfd8dc;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+.wa-lang-btn:hover { color: #fff; }
+.wa-lang-btn.active {
+    background: #fff;
+    color: #075e54;
+}
+
 /* ── Chat Body ─────────────────────────────────────────────── */
 .wa-chat-body { padding: 16px; display: flex; flex-direction: column; }
 
@@ -610,6 +638,7 @@ input:focus, select:focus {
     .wa-header h3 { font-size: 14.5px; }
     .wa-status { font-size: 11px; }
     .wa-avatar { width: 36px; height: 36px; min-width: 36px; font-size: 18px; }
+    .wa-lang-btn { font-size: 10px; padding: 5px 8px; }
 
     /* Standar: tumpuk vertikal, operator full width di tengah */
     .input-group-op { flex: 1; }

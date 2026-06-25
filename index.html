@@ -16,9 +16,19 @@
             <div class="wa-header-info">
                 <div class="wa-avatar">🧮</div>
                 <div>
-                    <h3>Kalkulator Pintar</h3>
-                    <span class="wa-status">Online</span>
+                    <h3>{{ t.title }}</h3>
+                    <span class="wa-status">{{ t.online }}</span>
                 </div>
+            </div>
+            <div class="wa-lang-switch" role="group" aria-label="Language / Bahasa">
+                <button type="button"
+                        class="wa-lang-btn"
+                        :class="{ active: lang === 'id' }"
+                        @click="playSound('click'); gantiBahasa('id')">🇮🇩 ID</button>
+                <button type="button"
+                        class="wa-lang-btn"
+                        :class="{ active: lang === 'en' }"
+                        @click="playSound('click'); gantiBahasa('en')">🇬🇧 EN</button>
             </div>
         </div>
 
@@ -26,12 +36,12 @@
 
             <div class="mode-select-wrapper">
                 <select class="mode-select" v-model="modeAktif" @change="gantiMode(modeAktif)">
-                    <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ tab.label }}</option>
+                    <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ t[tab.key] }}</option>
                 </select>
                 <span class="mode-select-arrow" aria-hidden="true"></span>
             </div>
 
-            <p class="wa-petunjuk">Tekan <b>Enter</b> untuk hitung • <b>Esc</b> untuk reset</p>
+            <p class="wa-petunjuk" v-html="t.hintKeys"></p>
 
             <div v-if="modeAktif === 'standar'">
                 <!-- Mode Kalkulator -->
@@ -67,35 +77,33 @@
                         <button type="button" class="std-key std-key-eq" @click="playSound('click'); stdEquals()">=</button>
                     </div>
                 </div>
-                <p class="mode-hint">💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja</p>
+                <p class="mode-hint">{{ t.hintCalc }}</p>
             </div>
 
             <div v-if="modeAktif === 'riwayat'">
                 <div class="wa-history-full">
                     <div class="wa-history-header">
-                        <span class="wa-history-count">{{ riwayat.length }} kalkulasi</span>
+                        <span class="wa-history-count">{{ t.historyCount(riwayat.length) }}</span>
                         <div class="wa-history-actions">
                             <button type="button"
                                     class="btn-history-action btn-drive"
                                     :class="{ 'btn-drive-connected': driveConnected }"
                                     @click="playSound('click'); toggleDrive()"
-                                    :title="driveConnected ? 'Putuskan koneksi Drive' : 'Hubungkan ke Google Drive'">
-                                {{ driveConnected ? '🟢 Drive Terhubung' : '☁️ Hubungkan Drive' }}
+                                    :title="driveConnected ? t.driveDisconnectTitle : t.driveConnectTitle">
+                                {{ driveConnected ? t.driveConnectedBtn : t.driveConnectBtn }}
                             </button>
-                            <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" title="Export ke file lokal">💾 Export</button>
-                            <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" title="Import dari file lokal">📥 Import</button>
-                            <button v-if="riwayat.length > 0" type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">🗑️ Hapus Semua</button>
+                            <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" :title="t.exportTitle">{{ t.exportBtn }}</button>
+                            <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" :title="t.importTitle">{{ t.importBtn }}</button>
+                            <button v-if="riwayat.length > 0" type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">{{ t.clearAllBtn }}</button>
                         </div>
                     </div>
-                    <div v-if="driveConnected" class="drive-info">
-                        📁 Otomatis tersimpan ke folder Drive: <b>{{ driveFolderName }}</b>
-                    </div>
+                    <div v-if="driveConnected" class="drive-info" v-html="t.driveFolderInfo(driveFolderName)"></div>
                     <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
                         {{ syncStatus.message }}
                     </div>
 
                     <div v-if="riwayat.length === 0" class="wa-history-empty">
-                        <p>📭 Belum ada riwayat kalkulasi</p>
+                        <p>{{ t.historyEmpty }}</p>
                     </div>
                     <div v-else class="wa-history-full-list">
                         <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">

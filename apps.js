@@ -1,9 +1,106 @@
 // ============================================================
+//  i18n: Terjemahan Bahasa Indonesia & English
+// ============================================================
+const LANG_STORAGE_KEY = 'wa_kalkulator_lang';
+
+function getLang() {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    return (saved === 'en' || saved === 'id') ? saved : 'id';
+}
+
+const I18N = {
+    id: {
+        langName: 'Indonesia',
+        title: 'Kalkulator Pintar',
+        online: 'Online',
+        tabStandar: '🔢 Standar',
+        tabRiwayat: '🕒 Riwayat',
+        hintKeys: 'Tekan <b>Enter</b> untuk hitung • <b>Esc</b> untuk reset',
+        hintCalc: '💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja',
+        historyCount: (n) => `${n} kalkulasi`,
+        driveConnectBtn: '☁️ Hubungkan Drive',
+        driveConnectedBtn: '🟢 Drive Terhubung',
+        driveConnectTitle: 'Hubungkan ke Google Drive',
+        driveDisconnectTitle: 'Putuskan koneksi Drive',
+        exportBtn: '💾 Export',
+        exportTitle: 'Export ke file lokal',
+        importBtn: '📥 Import',
+        importTitle: 'Import dari file lokal',
+        clearAllBtn: '🗑️ Hapus Semua',
+        driveFolderInfo: (name) => `📁 Otomatis tersimpan ke folder Drive: <b>${name}</b>`,
+        historyEmpty: '📭 Belum ada riwayat kalkulasi',
+        confirmClearAll: 'Hapus semua riwayat?',
+        confirmDisconnectDrive: 'Putuskan koneksi Google Drive?\n\nFile yang sudah tersimpan di Drive tidak akan terhapus.',
+        errDriveNotReady: '❌ Google Drive belum siap, coba lagi sebentar',
+        errClientId: '❌ Client ID Google belum diisi. Lihat komentar di apps.js bagian initDriveTokenClient()',
+        infoOpeningLogin: '🔐 Membuka jendela login Google...',
+        infoDisconnected: '🔌 Koneksi Google Drive diputus',
+        successConnected: (file, folder) => `✅ Terhubung ke Drive! File "${file}" di folder "${folder}" siap digunakan`,
+        errFolderSetup: (msg) => `❌ Gagal menyiapkan folder Drive: ${msg}`,
+        errDriveToken: '❌ Gagal mendapatkan izin akses Google Drive',
+        errNoExport: '❌ Tidak ada riwayat untuk di-export',
+        successExport: '✅ Riwayat berhasil di-export! File: kalkulator-riwayat-YYYY-MM-DD.txt',
+        infoClipboard: '📋 Data juga sudah disalin ke clipboard. Bisa di-paste ke Google Drive, Notion, dll',
+        errNoImportData: 'Tidak ada data yang dikenali di file ini',
+        confirmImport: (count) => `Import ${count} kalkulasi dari backup ini?\n\nCatatan: Ini akan menambah dengan riwayat yang sudah ada.`,
+        successImport: (count, total) => `✅ Berhasil import ${count} kalkulasi! Total sekarang: ${total}`,
+        errImportFailed: (msg) => `❌ Gagal import: ${msg}`,
+        errDriveSave: (msg) => `⚠️ Gagal auto-save ke Drive: ${msg}`,
+        rightClickBlocked: '❌ Right-click tidak diizinkan di halaman ini!',
+        devToolsBlocked: '⚠️ Developer Tools tidak dapat diakses!',
+        devToolsDetectedTitle: '⚠️ Akses Developer Tools Terdeteksi!',
+        devToolsDetectedBody: 'Halaman telah diblokir untuk keamanan.',
+    },
+    en: {
+        langName: 'English',
+        title: 'Smart Calculator',
+        online: 'Online',
+        tabStandar: '🔢 Standard',
+        tabRiwayat: '🕒 History',
+        hintKeys: 'Press <b>Enter</b> to calculate • <b>Esc</b> to reset',
+        hintCalc: '💡 Calculate freely like a regular calculator — numbers, operators, press = anytime',
+        historyCount: (n) => `${n} calculation${n === 1 ? '' : 's'}`,
+        driveConnectBtn: '☁️ Connect Drive',
+        driveConnectedBtn: '🟢 Drive Connected',
+        driveConnectTitle: 'Connect to Google Drive',
+        driveDisconnectTitle: 'Disconnect Drive',
+        exportBtn: '💾 Export',
+        exportTitle: 'Export to local file',
+        importBtn: '📥 Import',
+        importTitle: 'Import from local file',
+        clearAllBtn: '🗑️ Clear All',
+        driveFolderInfo: (name) => `📁 Automatically saved to Drive folder: <b>${name}</b>`,
+        historyEmpty: '📭 No calculation history yet',
+        confirmClearAll: 'Delete all history?',
+        confirmDisconnectDrive: 'Disconnect Google Drive?\n\nFiles already saved to Drive will not be deleted.',
+        errDriveNotReady: '❌ Google Drive is not ready yet, please try again shortly',
+        errClientId: '❌ Google Client ID has not been set. See the comment in apps.js under initDriveTokenClient()',
+        infoOpeningLogin: '🔐 Opening Google login window...',
+        infoDisconnected: '🔌 Google Drive connection disconnected',
+        successConnected: (file, folder) => `✅ Connected to Drive! File "${file}" in folder "${folder}" is ready`,
+        errFolderSetup: (msg) => `❌ Failed to set up Drive folder: ${msg}`,
+        errDriveToken: '❌ Failed to get Google Drive access permission',
+        errNoExport: '❌ No history to export',
+        successExport: '✅ History exported successfully! File: kalkulator-riwayat-YYYY-MM-DD.txt',
+        infoClipboard: '📋 Data has also been copied to clipboard. You can paste it into Google Drive, Notion, etc.',
+        errNoImportData: 'No recognizable data found in this file',
+        confirmImport: (count) => `Import ${count} calculation(s) from this backup?\n\nNote: This will be added to your existing history.`,
+        successImport: (count, total) => `✅ Successfully imported ${count} calculation(s)! Total now: ${total}`,
+        errImportFailed: (msg) => `❌ Import failed: ${msg}`,
+        errDriveSave: (msg) => `⚠️ Auto-save to Drive failed: ${msg}`,
+        rightClickBlocked: '❌ Right-click is not allowed on this page!',
+        devToolsBlocked: '⚠️ Developer Tools cannot be accessed!',
+        devToolsDetectedTitle: '⚠️ Developer Tools Access Detected!',
+        devToolsDetectedBody: 'The page has been blocked for security.',
+    },
+};
+
+// ============================================================
 //  Proteksi: Disable Right-Click & Developer Tools
 // ============================================================
 document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
-    alert('❌ Right-click tidak diizinkan di halaman ini!');
+    alert(I18N[getLang()].rightClickBlocked);
     return false;
 });
 
@@ -15,7 +112,7 @@ document.addEventListener('keydown', (e) => {
         (e.ctrlKey && e.shiftKey && e.key === 'C') ||
         (e.ctrlKey && e.shiftKey && e.key === 'K')) {
         e.preventDefault();
-        alert('⚠️ Developer Tools tidak dapat diakses!');
+        alert(I18N[getLang()].devToolsBlocked);
         return false;
     }
 });
@@ -30,7 +127,8 @@ setInterval(() => {
     
     if ((widthThreshold || heightThreshold) && !devtools.open) {
         devtools.open = true;
-        document.body.innerHTML = '<h1 style="text-align:center; margin-top:50px; color:#d9534f;">⚠️ Akses Developer Tools Terdeteksi!</h1><p style="text-align:center; font-size:18px;">Halaman telah diblokir untuk keamanan.</p>';
+        const t = I18N[getLang()];
+        document.body.innerHTML = `<h1 style="text-align:center; margin-top:50px; color:#d9534f;">${t.devToolsDetectedTitle}</h1><p style="text-align:center; font-size:18px;">${t.devToolsDetectedBody}</p>`;
     }
 }, 500);
 
@@ -118,11 +216,14 @@ const soundManager = new SoundManager();
 window.vueApp = new Vue({
     el: '#app',
     data: {
+        // ── Bahasa ──
+        lang: getLang(),
+
         // ── Mode Tab ──
         modeAktif: 'standar',
         tabs: [
-            { id: 'standar',  label: '🔢 Standar' },
-            { id: 'riwayat',  label: '🕒 Riwayat' },
+            { id: 'standar',  key: 'tabStandar' },
+            { id: 'riwayat',  key: 'tabRiwayat' },
         ],
 
         // ── Standar (Kalkulator) ──
@@ -158,6 +259,8 @@ window.vueApp = new Vue({
     },
 
     mounted() {
+        document.documentElement.lang = this.lang;
+
         const savedRiwayat = localStorage.getItem('wa_kalkulator_riwayat');
         if (savedRiwayat) {
             try { this.riwayat = JSON.parse(savedRiwayat); } catch(e) {}
@@ -180,6 +283,10 @@ window.vueApp = new Vue({
     },
 
     computed: {
+        t() {
+            return I18N[this.lang];
+        },
+
         standarDisplayFormatted() {
             const d = this.standar.display;
             if (d === 'Error') return d;
@@ -231,6 +338,14 @@ window.vueApp = new Vue({
         // ── Sound Effects ─────────────────────────────────────
         playSound(soundName) {
             soundManager.play(soundName);
+        },
+
+        // ── Ganti Bahasa ──────────────────────────────────────
+        gantiBahasa(newLang) {
+            if (newLang !== 'id' && newLang !== 'en') return;
+            this.lang = newLang;
+            localStorage.setItem(LANG_STORAGE_KEY, newLang);
+            document.documentElement.lang = newLang;
         },
 
         // ── Ganti Mode ────────────────────────────────────────
@@ -460,7 +575,7 @@ window.vueApp = new Vue({
         },
 
         hapusSemua() {
-            if (confirm('Hapus semua riwayat?')) {
+            if (confirm(this.t.confirmClearAll)) {
                 this.riwayat = [];
                 localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
 
@@ -475,7 +590,7 @@ window.vueApp = new Vue({
         // ════════════════════════════════════════════════════════
         exportRiwayat() {
             if (this.riwayat.length === 0) {
-                this.showSync('error', '❌ Tidak ada riwayat untuk di-export');
+                this.showSync('error', this.t.errNoExport);
                 return;
             }
 
@@ -501,12 +616,12 @@ window.vueApp = new Vue({
             link.download = `kalkulator-riwayat-${new Date().toISOString().split('T')[0]}.txt`;
             link.click();
 
-            this.showSync('success', '✅ Riwayat berhasil di-export! File: kalkulator-riwayat-YYYY-MM-DD.txt');
+            this.showSync('success', this.t.successExport);
 
             // Salin ke clipboard juga
             setTimeout(() => {
                 navigator.clipboard.writeText(txtString).then(() => {
-                    this.showSync('info', '📋 Data juga sudah disalin ke clipboard. Bisa di-paste ke Google Drive, Notion, dll');
+                    this.showSync('info', this.t.infoClipboard);
                 }).catch(() => {
                     console.log('Clipboard copy failed');
                 });
@@ -527,12 +642,12 @@ window.vueApp = new Vue({
                         const importedItems = this.parseRiwayatTxt(event.target.result);
 
                         if (importedItems.length === 0) {
-                            throw new Error('Tidak ada data yang dikenali di file ini');
+                            throw new Error(this.t.errNoImportData);
                         }
 
                         // Tanya konfirmasi
                         const count = importedItems.length;
-                        if (confirm(`Import ${count} kalkulasi dari backup ini?\n\nCatatan: Ini akan menambah dengan riwayat yang sudah ada.`)) {
+                        if (confirm(this.t.confirmImport(count))) {
                             // Merge riwayat
                             const newRiwayat = [...importedItems, ...this.riwayat];
                             // Remove duplikat berdasarkan ID
@@ -550,10 +665,10 @@ window.vueApp = new Vue({
                                 this.simpanRiwayatKeDrive();
                             }
 
-                            this.showSync('success', `✅ Berhasil import ${count} kalkulasi! Total sekarang: ${this.riwayat.length}`);
+                            this.showSync('success', this.t.successImport(count, this.riwayat.length));
                         }
                     } catch (error) {
-                        this.showSync('error', `❌ Gagal import: ${error.message}`);
+                        this.showSync('error', this.t.errImportFailed(error.message));
                     }
                 };
                 reader.readAsText(file);
@@ -623,7 +738,7 @@ window.vueApp = new Vue({
                             this.driveAccessToken = response.access_token;
                             this.onDriveTokenReady();
                         } else {
-                            this.showSync('error', '❌ Gagal mendapatkan izin akses Google Drive');
+                            this.showSync('error', this.t.errDriveToken);
                         }
                     },
                 });
@@ -633,7 +748,7 @@ window.vueApp = new Vue({
 
         toggleDrive() {
             if (this.driveConnected) {
-                if (confirm('Putuskan koneksi Google Drive?\n\nFile yang sudah tersimpan di Drive tidak akan terhapus.')) {
+                if (confirm(this.t.confirmDisconnectDrive)) {
                     this.disconnectDrive();
                 }
             } else {
@@ -643,18 +758,18 @@ window.vueApp = new Vue({
 
         connectDrive(silent) {
             if (!this.driveTokenClient) {
-                this.showSync('error', '❌ Google Drive belum siap, coba lagi sebentar');
+                this.showSync('error', this.t.errDriveNotReady);
                 return;
             }
 
             if (this.DRIVE_CLIENT_ID && this.DRIVE_CLIENT_ID.indexOf('GANTI_DENGAN_CLIENT_ID') === 0) {
                 if (!silent) {
-                    this.showSync('error', '❌ Client ID Google belum diisi. Lihat komentar di apps.js bagian initDriveTokenClient()');
+                    this.showSync('error', this.t.errClientId);
                 }
                 return;
             }
 
-            if (!silent) this.showSync('info', '🔐 Membuka jendela login Google...');
+            if (!silent) this.showSync('info', this.t.infoOpeningLogin);
 
             // 'silent' mencoba tanpa menampilkan consent screen jika sesi masih ada;
             // jika gagal, browser akan otomatis tetap menampilkan popup saat klik manual.
@@ -668,7 +783,7 @@ window.vueApp = new Vue({
             this.driveConnected = false;
             this.driveAccessToken = null;
             localStorage.removeItem('wa_kalkulator_drive_connected');
-            this.showSync('info', '🔌 Koneksi Google Drive diputus');
+            this.showSync('info', this.t.infoDisconnected);
         },
 
         async onDriveTokenReady() {
@@ -677,7 +792,7 @@ window.vueApp = new Vue({
                 await this.pastikanFileDrive(folderId);
                 this.driveConnected = true;
                 localStorage.setItem('wa_kalkulator_drive_connected', '1');
-                this.showSync('success', `✅ Terhubung ke Drive! File "${this.driveFileName}" di folder "${this.driveFolderName}" siap digunakan`);
+                this.showSync('success', this.t.successConnected(this.driveFileName, this.driveFolderName));
 
                 // Sinkronkan riwayat yang sudah ada saat ini ke file tersebut
                 if (this.riwayat.length > 0) {
@@ -685,7 +800,7 @@ window.vueApp = new Vue({
                 }
             } catch (err) {
                 console.error(err);
-                this.showSync('error', '❌ Gagal menyiapkan folder Drive: ' + err.message);
+                this.showSync('error', this.t.errFolderSetup(err.message));
             }
         },
 
@@ -842,7 +957,7 @@ window.vueApp = new Vue({
                 }
             } catch (err) {
                 console.error('Gagal simpan ke Drive:', err);
-                this.showSync('error', '⚠️ Gagal auto-save ke Drive: ' + err.message);
+                this.showSync('error', this.t.errDriveSave(err.message));
             } finally {
                 this.driveSaving = false;
             }
