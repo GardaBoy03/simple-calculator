@@ -5,7 +5,7 @@ const LANG_STORAGE_KEY = 'wa_kalkulator_lang';
 
 function getLang() {
     const saved = localStorage.getItem(LANG_STORAGE_KEY);
-    return (saved === 'en' || saved === 'id') ? saved : 'id';
+    return (saved === 'en' || saved === 'id') ? saved : 'en';
 }
 
 const I18N = {
