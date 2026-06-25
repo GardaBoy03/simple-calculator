@@ -150,8 +150,11 @@ window.vueApp = new Vue({
         driveConnected: false,
         driveFolderName: 'Kalkulator WhatsApp - Riwayat',
         driveFolderId: null,
+        driveFileName: 'riwayat-kalkulator.txt',
+        driveFileId: null,
         driveAccessToken: null,
         driveTokenClient: null,
+        driveSaving: false,
     },
 
     mounted() {
@@ -162,6 +165,9 @@ window.vueApp = new Vue({
 
         const savedFolderId = localStorage.getItem('wa_kalkulator_drive_folder_id');
         if (savedFolderId) this.driveFolderId = savedFolderId;
+
+        const savedFileId = localStorage.getItem('wa_kalkulator_drive_file_id');
+        if (savedFileId) this.driveFileId = savedFileId;
 
         this.initDriveTokenClient();
 
@@ -438,21 +444,29 @@ window.vueApp = new Vue({
 
             localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
 
-            // Auto-save ke Google Drive sebagai file .txt (jika sudah terhubung)
+            // Auto-save ke Google Drive — selalu menimpa SATU file yang sama (tidak membuat file baru)
             if (this.driveConnected) {
-                this.simpanItemKeDrive(item);
+                this.simpanRiwayatKeDrive();
             }
         },
 
         hapusSatu(id) {
             this.riwayat = this.riwayat.filter(r => r.id !== id);
             localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+
+            if (this.driveConnected) {
+                this.simpanRiwayatKeDrive();
+            }
         },
 
         hapusSemua() {
             if (confirm('Hapus semua riwayat?')) {
                 this.riwayat = [];
                 localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+
+                if (this.driveConnected) {
+                    this.simpanRiwayatKeDrive();
+                }
             }
         },
 
@@ -531,6 +545,10 @@ window.vueApp = new Vue({
 
                             this.riwayat = merged;
                             localStorage.setItem('wa_kalkulator_riwayat', JSON.stringify(this.riwayat));
+
+                            if (this.driveConnected) {
+                                this.simpanRiwayatKeDrive();
+                            }
 
                             this.showSync('success', `✅ Berhasil import ${count} kalkulasi! Total sekarang: ${this.riwayat.length}`);
                         }
@@ -655,10 +673,16 @@ window.vueApp = new Vue({
 
         async onDriveTokenReady() {
             try {
-                await this.pastikanFolderDrive();
+                const folderId = await this.pastikanFolderDrive();
+                await this.pastikanFileDrive(folderId);
                 this.driveConnected = true;
                 localStorage.setItem('wa_kalkulator_drive_connected', '1');
-                this.showSync('success', `✅ Terhubung ke Drive! Folder "${this.driveFolderName}" siap digunakan`);
+                this.showSync('success', `✅ Terhubung ke Drive! File "${this.driveFileName}" di folder "${this.driveFolderName}" siap digunakan`);
+
+                // Sinkronkan riwayat yang sudah ada saat ini ke file tersebut
+                if (this.riwayat.length > 0) {
+                    this.simpanRiwayatKeDrive();
+                }
             } catch (err) {
                 console.error(err);
                 this.showSync('error', '❌ Gagal menyiapkan folder Drive: ' + err.message);
@@ -720,46 +744,107 @@ window.vueApp = new Vue({
             return this.driveFolderId;
         },
 
-        // Simpan satu item riwayat sebagai file .txt baru di folder Drive
-        async simpanItemKeDrive(item) {
+        // Cari file riwayat di dalam folder; jika belum ada, biarkan null (akan dibuat sekali saja)
+        async pastikanFileDrive(folderId) {
+            if (this.driveFileId) {
+                // Verifikasi file masih ada & belum dihapus
+                try {
+                    const meta = await this.driveFetch(
+                        `https://www.googleapis.com/drive/v3/files/${this.driveFileId}?fields=id,trashed`
+                    );
+                    if (!meta.trashed) return this.driveFileId;
+                } catch (e) {
+                    // file tidak ditemukan, lanjut cari/buat ulang di bawah
+                }
+                this.driveFileId = null;
+            }
+
+            const q = encodeURIComponent(
+                `name='${this.driveFileName}' and '${folderId}' in parents and trashed=false`
+            );
+            const searchRes = await this.driveFetch(
+                `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`
+            );
+
+            if (searchRes.files && searchRes.files.length > 0) {
+                this.driveFileId = searchRes.files[0].id;
+                localStorage.setItem('wa_kalkulator_drive_file_id', this.driveFileId);
+            }
+
+            return this.driveFileId; // null berarti file belum pernah dibuat
+        },
+
+        // Susun seluruh riwayat jadi satu teks utuh
+        buatTeksRiwayatLengkap() {
+            let txt = `Kalkulator WhatsApp - Riwayat Perhitungan\n`;
+            txt += `==========================================\n`;
+            txt += `Terakhir diperbarui: ${new Date().toLocaleString('id-ID')}\n`;
+            txt += `Jumlah: ${this.riwayat.length}\n\n`;
+
+            this.riwayat.forEach(item => {
+                txt += `Waktu   : ${item.waktu}\n`;
+                txt += `Operasi : ${item.teks}\n`;
+                txt += `Hasil   : ${item.total}\n`;
+                txt += `----------------------------------------\n`;
+            });
+
+            return txt;
+        },
+
+        // Simpan seluruh riwayat ke SATU file yang sama di Drive (selalu menimpa isinya, bukan membuat file baru)
+        async simpanRiwayatKeDrive() {
+            this.driveSaving = true;
             try {
                 const folderId = await this.pastikanFolderDrive();
+                await this.pastikanFileDrive(folderId);
 
-                const namaFile = `kalkulasi-${item.id}.txt`;
-                const isiFile =
-                    `Kalkulator WhatsApp - Riwayat Perhitungan\n` +
-                    `==========================================\n\n` +
-                    `Waktu   : ${item.waktu}\n` +
-                    `Operasi : ${item.teks}\n` +
-                    `Hasil   : ${item.total}\n`;
+                const isiFile = this.buatTeksRiwayatLengkap();
 
-                const metadata = {
-                    name: namaFile,
-                    parents: [folderId],
-                    mimeType: 'text/plain',
-                };
+                if (this.driveFileId) {
+                    // File sudah ada -> timpa isinya saja (PATCH media), tidak membuat file baru
+                    await this.driveFetch(
+                        `https://www.googleapis.com/upload/drive/v3/files/${this.driveFileId}?uploadType=media`,
+                        {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+                            body: isiFile,
+                        }
+                    );
+                } else {
+                    // Belum pernah ada file -> buat satu kali, setelah ini selalu dipakai ulang
+                    const metadata = {
+                        name: this.driveFileName,
+                        parents: [folderId],
+                        mimeType: 'text/plain',
+                    };
 
-                const boundary = '-------kalkulatorwa' + Date.now();
-                const body =
-                    `--${boundary}\r\n` +
-                    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-                    JSON.stringify(metadata) + `\r\n` +
-                    `--${boundary}\r\n` +
-                    `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
-                    isiFile + `\r\n` +
-                    `--${boundary}--`;
+                    const boundary = '-------kalkulatorwa' + Date.now();
+                    const body =
+                        `--${boundary}\r\n` +
+                        `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+                        JSON.stringify(metadata) + `\r\n` +
+                        `--${boundary}\r\n` +
+                        `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
+                        isiFile + `\r\n` +
+                        `--${boundary}--`;
 
-                await this.driveFetch(
-                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-                        body: body,
-                    }
-                );
+                    const createRes = await this.driveFetch(
+                        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+                            body: body,
+                        }
+                    );
+
+                    this.driveFileId = createRes.id;
+                    localStorage.setItem('wa_kalkulator_drive_file_id', this.driveFileId);
+                }
             } catch (err) {
                 console.error('Gagal simpan ke Drive:', err);
                 this.showSync('error', '⚠️ Gagal auto-save ke Drive: ' + err.message);
+            } finally {
+                this.driveSaving = false;
             }
         },
     }
