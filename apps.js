@@ -457,12 +457,16 @@ window.vueApp = new Vue({
         stdPercent() {
             let current = parseFloat(this.standar.display.replace(',', '.'));
             if (this.standar.stored !== null && this.standar.operator !== null) {
+                // Ada operator aktif (mis. 15.000 + 10%): ubah jadi nilai persen dari stored,
+                // dan biarkan overwrite = false agar tombol "=" bisa langsung menghitung hasilnya.
                 current = (this.standar.stored * current) / 100;
+                this.standar.overwrite = false;
             } else {
+                // Persen berdiri sendiri (mis. 50% -> 0,5): tetap overwrite = true.
                 current = current / 100;
+                this.standar.overwrite = true;
             }
             this.standar.display = current.toString();
-            this.standar.overwrite = true;
         },
 
         stdCalcInternal() {
