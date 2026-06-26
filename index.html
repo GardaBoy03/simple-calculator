@@ -12,6 +12,45 @@
 <div id="app">
     <form @submit.prevent class="wa-container">
 
+        <!-- ── Sidebar ala WhatsApp Web (hanya tampil di layar desktop) ── -->
+        <aside class="wa-sidebar">
+            <div class="wa-sidebar-header">
+                <div class="wa-avatar wa-avatar-sidebar">🧮</div>
+                <h3 class="wa-sidebar-title">{{ t.title }}</h3>
+                <div class="wa-lang-switch wa-lang-switch-sidebar" role="group" aria-label="Language / Bahasa">
+                    <button type="button"
+                            class="wa-lang-btn"
+                            :class="{ active: lang === 'id' }"
+                            @click="playSound('click'); gantiBahasa('id')">🇮🇩</button>
+                    <button type="button"
+                            class="wa-lang-btn"
+                            :class="{ active: lang === 'en' }"
+                            @click="playSound('click'); gantiBahasa('en')">🇬🇧</button>
+                </div>
+            </div>
+            <div class="wa-sidebar-search">
+                <span class="wa-sidebar-search-icon" aria-hidden="true">🔍</span>
+                <span class="wa-sidebar-search-text">{{ t.title }}</span>
+            </div>
+            <nav class="wa-sidebar-list">
+                <button v-for="tab in tabs"
+                        :key="tab.id"
+                        type="button"
+                        class="wa-sidebar-item"
+                        :class="{ active: modeAktif === tab.id }"
+                        @click="playSound('click'); gantiMode(tab.id)">
+                    <span class="wa-sidebar-item-avatar">{{ tab.id === 'standar' ? '🔢' : '🕒' }}</span>
+                    <span class="wa-sidebar-item-info">
+                        <strong>{{ t[tab.key] }}</strong>
+                        <small v-if="tab.id === 'riwayat'">{{ t.historyCount(riwayat.length) }}</small>
+                        <small v-else>{{ t.online }}</small>
+                    </span>
+                </button>
+            </nav>
+        </aside>
+
+        <div class="wa-main">
+
         <div class="wa-header">
             <div class="wa-header-info">
                 <div class="wa-avatar">🧮</div>
@@ -117,6 +156,8 @@
             </div>
 
         </div>
+
+        </div><!-- /.wa-main -->
     </form>
 </div>
 
