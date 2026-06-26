@@ -166,6 +166,147 @@ body {
     background: #f0f0f0; border-radius: 6px; padding: 5px 10px;
 }
 
+/* ── Tab Donasi ────────────────────────────────────────────── */
+.wa-donasi-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.donasi-header {
+    text-align: center;
+    padding: 20px 15px;
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+    border-radius: 10px;
+    color: white;
+}
+
+.donasi-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.donasi-header h3 {
+    margin: 10px 0 5px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.donasi-subtitle {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.donasi-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 768px) {
+    .donasi-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.donasi-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.donasi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.donasi-card-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.donasi-card h4 {
+    margin: 12px 0 8px;
+    font-size: 18px;
+    color: #075e54;
+    font-weight: 700;
+}
+
+.donasi-card p {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.donasi-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.donasi-btn-primary {
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+    color: white;
+}
+
+.donasi-btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(7, 94, 84, 0.3);
+}
+
+.donasi-btn-secondary {
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    color: white;
+}
+
+.donasi-btn-secondary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.3);
+}
+
+.donasi-btn-success {
+    background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+    color: white;
+}
+
+.donasi-btn-success:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.donasi-message {
+    background: #f0f0f0;
+    border-left: 4px solid #075e54;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.donasi-message p {
+    margin: 0;
+}
+
 /* ── Grid Input (Standar) ──────────────────────────────────── */
 .input-group-op { flex: 0 0 64px; }
 .input-group label { font-size: 11px; color: #128c7e; margin-bottom: 4px; font-weight: 600; }

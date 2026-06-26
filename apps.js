@@ -50,6 +50,15 @@ const I18N = {
         devToolsBlocked: '⚠️ Developer Tools tidak dapat diakses!',
         devToolsDetectedTitle: '⚠️ Akses Developer Tools Terdeteksi!',
         devToolsDetectedBody: 'Halaman telah diblokir untuk keamanan.',
+        tabDonasi: '❤️ Donasi',
+        donasiTitle: 'Dukung Kami',
+        donasiSubtitle: 'Bantu kami',
+        donasiSubtitleFull: 'Jika aplikasi kalkulator ini berguna untuk Anda, silakan mendukung kami dengan donasi kecil 💝',
+        donasiSaweriaDesc: 'Platform donasi digital untuk mendukung kreator lokal Indonesia',
+        donasiTraktirinDesc: 'Ajak teman untuk traktir Anda atau berikan tips untuk karya Anda',
+        donasiKitabisaDesc: 'Platform crowdfunding terpercaya untuk berbagai kebutuhan',
+        donasiVisitBtn: 'Kunjungi →',
+        donasiMessage: 'Terima kasih telah menggunakan aplikasi kami! 🙏 Setiap dukungan Anda sangat berarti untuk pengembangan aplikasi ini.',
     },
     en: {
         langName: 'English',
@@ -92,6 +101,15 @@ const I18N = {
         devToolsBlocked: '⚠️ Developer Tools cannot be accessed!',
         devToolsDetectedTitle: '⚠️ Developer Tools Access Detected!',
         devToolsDetectedBody: 'The page has been blocked for security.',
+        tabDonasi: '❤️ Donate',
+        donasiTitle: 'Support Us',
+        donasiSubtitle: 'Help us',
+        donasiSubtitleFull: 'If this calculator app has been useful to you, please support us with a small donation 💝',
+        donasiSaweriaDesc: 'Digital donation platform to support local Indonesian creators',
+        donasiTraktirinDesc: 'Invite friends to treat you or give tips for your work',
+        donasiKitabisaDesc: 'Trusted crowdfunding platform for various needs',
+        donasiVisitBtn: 'Visit →',
+        donasiMessage: 'Thank you for using our app! 🙏 Every support you give is very meaningful for the development of this application.',
     },
 };
 
@@ -224,6 +242,7 @@ window.vueApp = new Vue({
         tabs: [
             { id: 'standar',  key: 'tabStandar' },
             { id: 'riwayat',  key: 'tabRiwayat' },
+            { id: 'donasi',   key: 'tabDonasi' },
         ],
 
         // ── Standar (Kalkulator) ──
@@ -302,6 +321,16 @@ window.vueApp = new Vue({
     },
 
     methods: {
+        // ── Helper: Get Tab Icon ──
+        getTabIcon(tabId) {
+            const icons = {
+                'standar': '🔢',
+                'riwayat': '🕒',
+                'donasi': '❤️'
+            };
+            return icons[tabId] || '📌';
+        },
+
         // ── Helper: Live Format Ribuan Saat Diketik ──
         formatInputRibuan(objek, properti, event) {
             let nilaiAsli = event.target.value;

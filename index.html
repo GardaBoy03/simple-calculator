@@ -39,10 +39,11 @@
                         class="wa-sidebar-item"
                         :class="{ active: modeAktif === tab.id }"
                         @click="playSound('click'); gantiMode(tab.id)">
-                    <span class="wa-sidebar-item-avatar">{{ tab.id === 'standar' ? '🔢' : '🕒' }}</span>
+                    <span class="wa-sidebar-item-avatar">{{ getTabIcon(tab.id) }}</span>
                     <span class="wa-sidebar-item-info">
                         <strong>{{ t[tab.key] }}</strong>
                         <small v-if="tab.id === 'riwayat'">{{ t.historyCount(riwayat.length) }}</small>
+                        <small v-else-if="tab.id === 'donasi'">{{ t.donasiSubtitle }}</small>
                         <small v-else>{{ t.online }}</small>
                     </span>
                 </button>
@@ -151,6 +152,43 @@
                             <strong class="wa-history-total">{{ item.total }}</strong>
                             <span class="wa-history-time">{{ item.waktu }} ✓</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="modeAktif === 'donasi'">
+                <!-- Tab Donasi Saweria -->
+                <div class="wa-donasi-container">
+                    <div class="donasi-header">
+                        <div class="donasi-icon">❤️</div>
+                        <h3>{{ t.donasiTitle }}</h3>
+                        <p class="donasi-subtitle">{{ t.donasiSubtitleFull }}</p>
+                    </div>
+
+                    <div class="donasi-cards">
+                        <!-- Kartu Saweria -->
+                        <div class="donasi-card">
+                            <div class="donasi-card-icon">🎉</div>
+                            <h4>Saweria</h4>
+                            <p>{{ t.donasiSaweriaDesc }}</p>
+                            <a href="https://saweria.co/garda1663" target="_blank" rel="noopener noreferrer" class="donasi-btn donasi-btn-primary">
+                                {{ t.donasiVisitBtn }}
+                            </a>
+                        </div>
+
+                        <!-- Kartu Traktir.in -->
+                        <div class="donasi-card">
+                            <div class="donasi-card-icon">☕</div>
+                            <h4>Traktir.in</h4>
+                            <p>{{ t.donasiTraktirinDesc }}</p>
+                            <a href="https://teer.id/gardaboy-taufan-40" target="_blank" rel="noopener noreferrer" class="donasi-btn donasi-btn-secondary">
+                                {{ t.donasiVisitBtn }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="donasi-message">
+                        <p v-html="t.donasiMessage"></p>
                     </div>
                 </div>
             </div>
