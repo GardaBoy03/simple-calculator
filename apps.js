@@ -59,9 +59,6 @@ const I18N = {
         donasiKitabisaDesc: 'Platform crowdfunding terpercaya untuk berbagai kebutuhan',
         donasiVisitBtn: 'Kunjungi →',
         donasiMessage: 'Terima kasih telah menggunakan aplikasi kami! 🙏 Setiap dukungan Anda sangat berarti untuk pengembangan aplikasi ini.',
-        tabChat: '💬 Chat Live',
-        chatTitle: 'Komunitas Live Chat',
-        chatSubtitle: 'Ngobrol bersama pengguna lain secara real-time',
     },
     en: {
         langName: 'English',
@@ -113,9 +110,6 @@ const I18N = {
         donasiKitabisaDesc: 'Trusted crowdfunding platform for various needs',
         donasiVisitBtn: 'Visit →',
         donasiMessage: 'Thank you for using our app! 🙏 Every support you give is very meaningful for the development of this application.',
-        tabChat: '💬 Live Chat',
-        chatTitle: 'Live Chat Community',
-        chatSubtitle: 'Talk with other users in real-time',
     },
 };
 
@@ -249,7 +243,6 @@ window.vueApp = new Vue({
             { id: 'standar',  key: 'tabStandar' },
             { id: 'riwayat',  key: 'tabRiwayat' },
             { id: 'donasi',   key: 'tabDonasi' },
-            { id: 'chat',     key: 'tabChat' },
         ],
 
         // ── Standar (Kalkulator) ──
@@ -332,7 +325,6 @@ window.vueApp = new Vue({
         getTabIcon(tabId) {
             const icons = {
                 'standar': '🔢',
-                'chat': '💬',
                 'riwayat': '🕒',
                 'donasi': '❤️'
             };

@@ -120,23 +120,6 @@
                 <p class="mode-hint">{{ t.hintCalc }}</p>
             </div>
 
-            <!-- Live Chat Tab Block View Workspace -->
-            <div v-if="modeAktif === 'chat'">
-                <!-- Mode Chat -->
-                <div class="wa-chat-container">
-                    <div class="chat-header">
-                        <div class="chat-icon">💬</div>
-                        <h3>{{ t.chatTitle }}</h3>
-                        <p class="chat-subtitle">{{ t.chatSubtitle }}</p>
-                    </div>
-                
-                    <div class="live-chat-frame-box"></div>
-                        <!-- Replace this URL with your custom free Cbox/Chatango embedded iframe path -->
-                        <iframe src="https://www5.cbox.ws/box/?boxid=964264&boxtag=B3DcHC" width="100%" height="450" allowtransparency="yes" allow="autoplay" frameborder="0" marginheight="0" marginwidth="0" scrolling="auto"></iframe>
-                    </div>
-                </div>
-            </div>
-
             <div v-if="modeAktif === 'riwayat'">
                 <div class="wa-history-full">
                     <div class="wa-history-header">
