@@ -12,78 +12,32 @@
 <div id="app">
     <form @submit.prevent class="wa-container">
 
-        <!-- ── Sidebar ala WhatsApp Web (hanya tampil di layar desktop) ── -->
-        <aside class="wa-sidebar">
-            <div class="wa-sidebar-header">
-                <div class="wa-avatar wa-avatar-sidebar">🧮</div>
-                <h3 class="wa-sidebar-title">{{ t.title }}</h3>
-                <div class="wa-lang-switch wa-lang-switch-sidebar" role="group" aria-label="Language / Bahasa">
+        <div class="wa-main">
+
+            <div class="wa-header">
+                <div class="wa-header-info">
+                    <div class="wa-avatar">🧮</div>
+                    <div>
+                        <h3>{{ t.title }}</h3>
+                        <span class="wa-status">{{ t.online }}</span>
+                    </div>
+                </div>
+                <div class="wa-lang-switch" role="group" aria-label="Language / Bahasa">
                     <button type="button"
                             class="wa-lang-btn"
                             :class="{ active: lang === 'id' }"
-                            @click="playSound('click'); gantiBahasa('id')">🇮🇩</button>
+                            @click="playSound('click'); gantiBahasa('id')">🇮🇩 ID</button>
                     <button type="button"
                             class="wa-lang-btn"
                             :class="{ active: lang === 'en' }"
-                            @click="playSound('click'); gantiBahasa('en')">🇬🇧</button>
+                            @click="playSound('click'); gantiBahasa('en')">🇬🇧 EN</button>
                 </div>
             </div>
-            <div class="wa-sidebar-search">
-                <span class="wa-sidebar-search-icon" aria-hidden="true">🔍</span>
-                <span class="wa-sidebar-search-text">{{ t.title }}</span>
-            </div>
-            <nav class="wa-sidebar-list">
-                <button v-for="tab in tabs"
-                        :key="tab.id"
-                        type="button"
-                        class="wa-sidebar-item"
-                        :class="{ active: modeAktif === tab.id }"
-                        @click="playSound('click'); gantiMode(tab.id)">
-                    <span class="wa-sidebar-item-avatar">{{ getTabIcon(tab.id) }}</span>
-                    <span class="wa-sidebar-item-info">
-                        <strong>{{ t[tab.key] }}</strong>
-                        <small v-if="tab.id === 'riwayat'">{{ t.historyCount(riwayat.length) }}</small>
-                        <small v-else-if="tab.id === 'donasi'">{{ t.donasiSubtitle }}</small>
-                        <small v-else>{{ t.online }}</small>
-                    </span>
-                </button>
-            </nav>
-        </aside>
 
-        <div class="wa-main">
+            <div class="wa-chat-body">
 
-        <div class="wa-header">
-            <div class="wa-header-info">
-                <div class="wa-avatar">🧮</div>
-                <div>
-                    <h3>{{ t.title }}</h3>
-                    <span class="wa-status">{{ t.online }}</span>
-                </div>
-            </div>
-            <div class="wa-lang-switch" role="group" aria-label="Language / Bahasa">
-                <button type="button"
-                        class="wa-lang-btn"
-                        :class="{ active: lang === 'id' }"
-                        @click="playSound('click'); gantiBahasa('id')">🇮🇩 ID</button>
-                <button type="button"
-                        class="wa-lang-btn"
-                        :class="{ active: lang === 'en' }"
-                        @click="playSound('click'); gantiBahasa('en')">🇬🇧 EN</button>
-            </div>
-        </div>
+                <p class="wa-petunjuk" v-html="t.hintKeys"></p>
 
-        <div class="wa-chat-body">
-
-            <div class="mode-select-wrapper">
-                <select class="mode-select" v-model="modeAktif" @change="gantiMode(modeAktif)">
-                    <option v-for="tab in tabs" :key="tab.id" :value="tab.id">{{ t[tab.key] }}</option>
-                </select>
-                <span class="mode-select-arrow" aria-hidden="true"></span>
-            </div>
-
-            <p class="wa-petunjuk" v-html="t.hintKeys"></p>
-
-            <div v-if="modeAktif === 'standar'">
                 <!-- Mode Kalkulator -->
                 <div class="std-kalkulator" tabindex="0" @keydown="stdKeydown">
                     <div class="std-layar">
@@ -118,90 +72,14 @@
                     </div>
                 </div>
                 <p class="mode-hint">{{ t.hintCalc }}</p>
+
             </div>
-
-            <div v-if="modeAktif === 'riwayat'">
-                <div class="wa-history-full">
-                    <div class="wa-history-header">
-                        <span class="wa-history-count">{{ t.historyCount(riwayat.length) }}</span>
-                        <div class="wa-history-actions">
-                            <button type="button"
-                                    class="btn-history-action btn-drive"
-                                    :class="{ 'btn-drive-connected': driveConnected }"
-                                    @click="playSound('click'); toggleDrive()"
-                                    :title="driveConnected ? t.driveDisconnectTitle : t.driveConnectTitle">
-                                {{ driveConnected ? t.driveConnectedBtn : t.driveConnectBtn }}
-                            </button>
-                            <button type="button" class="btn-history-action" @click="playSound('click'); exportRiwayat()" :title="t.exportTitle">{{ t.exportBtn }}</button>
-                            <button type="button" class="btn-history-action" @click="playSound('click'); importRiwayat()" :title="t.importTitle">{{ t.importBtn }}</button>
-                            <button v-if="riwayat.length > 0" type="button" class="btn-clear-all" @click="playSound('click'); hapusSemua()">{{ t.clearAllBtn }}</button>
-                        </div>
-                    </div>
-                    <div v-if="driveConnected" class="drive-info" v-html="t.driveFolderInfo(driveFolderName)"></div>
-                    <div v-if="syncStatus" class="sync-status" :class="syncStatus.type">
-                        {{ syncStatus.message }}
-                    </div>
-
-                    <div v-if="riwayat.length === 0" class="wa-history-empty">
-                        <p>{{ t.historyEmpty }}</p>
-                    </div>
-                    <div v-else class="wa-history-full-list">
-                        <div class="wa-bubble-history" v-for="item in riwayat" :key="item.id">
-                            <button type="button" class="btn-delete-item" @click="playSound('click'); hapusSatu(item.id)">×</button>
-                            <span class="wa-history-text">{{ item.teks }}</span>
-                            <strong class="wa-history-total">{{ item.total }}</strong>
-                            <span class="wa-history-time">{{ item.waktu }} ✓</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="modeAktif === 'donasi'">
-                <!-- Tab Donasi Saweria -->
-                <div class="wa-donasi-container">
-                    <div class="donasi-header">
-                        <div class="donasi-icon">❤️</div>
-                        <h3>{{ t.donasiTitle }}</h3>
-                        <p class="donasi-subtitle">{{ t.donasiSubtitleFull }}</p>
-                    </div>
-
-                    <div class="donasi-cards">
-                        <!-- Kartu Saweria -->
-                        <div class="donasi-card">
-                            <div class="donasi-card-icon">🎉</div>
-                            <h4>Saweria</h4>
-                            <p>{{ t.donasiSaweriaDesc }}</p>
-                            <a href="https://saweria.co/garda1663" target="_blank" rel="noopener noreferrer" class="donasi-btn donasi-btn-primary">
-                                {{ t.donasiVisitBtn }}
-                            </a>
-                        </div>
-
-                        <!-- Kartu Traktir.in -->
-                        <div class="donasi-card">
-                            <div class="donasi-card-icon">☕</div>
-                            <h4>Traktir.in</h4>
-                            <p>{{ t.donasiTraktirinDesc }}</p>
-                            <a href="https://teer.id/gardaboy-taufan-40" target="_blank" rel="noopener noreferrer" class="donasi-btn donasi-btn-secondary">
-                                {{ t.donasiVisitBtn }}
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="donasi-message">
-                        <p v-html="t.donasiMessage"></p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
 
         </div><!-- /.wa-main -->
     </form>
 </div>
 
 <script src="vue.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js"></script>
 <script src="apps.js"></script>
 </body>
 </html>
