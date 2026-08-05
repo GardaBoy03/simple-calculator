@@ -14,8 +14,23 @@ const I18N = {
         title: 'Kalkulator Pintar',
         online: 'Online',
         tabStandar: '🔢 Standar',
+        tabDiskon: '🏷️ Diskon',
         hintKeys: 'Tekan <b>Enter</b> untuk hitung • <b>Esc</b> untuk reset',
         hintCalc: '💡 Hitung bebas seperti kalkulator pada umumnya — angka, operator, dan tekan = kapan saja',
+        hintDiskon: '💡 Isi harga awal & persen diskon. Diskon 2 opsional untuk diskon bertingkat (mis. 20%+10%)',
+        diskonHargaAwal: 'Harga Awal (Rp)',
+        diskonPlaceholderHarga: 'Contoh: 150.000',
+        diskonPersen1: 'Diskon 1 (%)',
+        diskonPersen2: 'Diskon 2 (%)',
+        diskonOpsional: 'opsional',
+        diskonPlaceholderPersen: 'Contoh: 20',
+        diskonHitungBtn: 'Hitung',
+        diskonResetBtn: 'Reset',
+        diskonErrorHarga: '⚠️ Masukkan harga awal terlebih dahulu!',
+        diskonHasilLabel: '🏷️ Hasil Diskon',
+        diskonHargaAwalLabel: 'Harga Awal',
+        diskonTotalPotongan: 'Total Potongan',
+        diskonHargaAkhir: 'Harga Akhir',
         rightClickBlocked: '❌ Right-click tidak diizinkan di halaman ini!',
         devToolsBlocked: '⚠️ Developer Tools tidak dapat diakses!',
         devToolsDetectedTitle: '⚠️ Akses Developer Tools Terdeteksi!',
@@ -26,8 +41,23 @@ const I18N = {
         title: 'Smart Calculator',
         online: 'Online',
         tabStandar: '🔢 Standard',
+        tabDiskon: '🏷️ Discount',
         hintKeys: 'Press <b>Enter</b> to calculate • <b>Esc</b> to reset',
         hintCalc: '💡 Calculate freely like a regular calculator — numbers, operators, press = anytime',
+        hintDiskon: '💡 Enter the original price & discount percentage. Discount 2 is optional for stacked discounts (e.g. 20%+10%)',
+        diskonHargaAwal: 'Original Price (Rp)',
+        diskonPlaceholderHarga: 'e.g. 150,000',
+        diskonPersen1: 'Discount 1 (%)',
+        diskonPersen2: 'Discount 2 (%)',
+        diskonOpsional: 'optional',
+        diskonPlaceholderPersen: 'e.g. 20',
+        diskonHitungBtn: 'Calculate',
+        diskonResetBtn: 'Reset',
+        diskonErrorHarga: '⚠️ Please enter the original price first!',
+        diskonHasilLabel: '🏷️ Discount Result',
+        diskonHargaAwalLabel: 'Original Price',
+        diskonTotalPotongan: 'Total Discount',
+        diskonHargaAkhir: 'Final Price',
         rightClickBlocked: '❌ Right-click is not allowed on this page!',
         devToolsBlocked: '⚠️ Developer Tools cannot be accessed!',
         devToolsDetectedTitle: '⚠️ Developer Tools Access Detected!',
@@ -159,6 +189,9 @@ window.vueApp = new Vue({
         // ── Bahasa ──
         lang: getLang(),
 
+        // ── Tab Aktif ──
+        activeTab: 'standar', // 'standar' | 'diskon'
+
         // ── Standar (Kalkulator) ──
         standar: {
             // Kalkulator
@@ -169,6 +202,16 @@ window.vueApp = new Vue({
             exprText: '',
             exprFull: '',  // Menyimpan ekspresi lengkap berantai
             nextInputResetExpr: false,
+        },
+
+        // ── Diskon (Kalkulator Diskon) ──
+        diskon: {
+            hargaDisplay: '',   // Nilai harga yang tampil di input (sudah diformat ribuan)
+            hargaRaw: '',       // Nilai harga mentah (hanya digit)
+            persen1: '',
+            persen2: '',
+            error: '',
+            hasil: null,        // { hargaAwal, totalPotongan, persenEfektif, hargaAkhir }
         },
     },
 
@@ -200,6 +243,75 @@ window.vueApp = new Vue({
             this.lang = newLang;
             localStorage.setItem(LANG_STORAGE_KEY, newLang);
             document.documentElement.lang = newLang;
+        },
+
+        // ── Ganti Tab ─────────────────────────────────────────
+        gantiTab(tab) {
+            if (tab !== 'standar' && tab !== 'diskon') return;
+            this.activeTab = tab;
+        },
+
+        // ── Helper Format ─────────────────────────────────────
+        formatRupiah(nilai) {
+            if (nilai === null || nilai === undefined || isNaN(nilai)) return '0';
+            const rounded = Math.round(nilai);
+            return formatRibuan(rounded.toString());
+        },
+
+        formatPersenHasil(nilai) {
+            if (nilai === null || nilai === undefined || isNaN(nilai)) return '0';
+            return formatDesimal(nilai, 2);
+        },
+
+        // ════════════════════════════════════════════════════════
+        // MODE: DISKON - KALKULATOR DISKON
+        // ════════════════════════════════════════════════════════
+        diskonHargaInput(event) {
+            // Hanya izinkan digit, format otomatis dengan pemisah ribuan
+            const raw = event.target.value.replace(/[^\d]/g, '');
+            this.diskon.hargaRaw = raw;
+            this.diskon.hargaDisplay = raw ? formatRibuan(raw) : '';
+            this.diskon.error = '';
+        },
+
+        diskonHitung() {
+            const harga = parseFloat(this.diskon.hargaRaw || '0');
+
+            if (!harga || harga <= 0) {
+                this.diskon.error = this.t.diskonErrorHarga;
+                this.diskon.hasil = null;
+                return;
+            }
+            this.diskon.error = '';
+
+            let p1 = parseFloat((this.diskon.persen1 || '0').toString().replace(',', '.'));
+            let p2 = parseFloat((this.diskon.persen2 || '0').toString().replace(',', '.'));
+            if (isNaN(p1) || p1 < 0) p1 = 0;
+            if (isNaN(p2) || p2 < 0) p2 = 0;
+
+            // Diskon bertingkat: diskon 2 dihitung dari harga setelah diskon 1
+            const setelahDiskon1 = harga - (harga * p1 / 100);
+            const setelahDiskon2 = setelahDiskon1 - (setelahDiskon1 * p2 / 100);
+
+            const hargaAkhir = Math.max(setelahDiskon2, 0);
+            const totalPotongan = harga - hargaAkhir;
+            const persenEfektif = harga > 0 ? (totalPotongan / harga) * 100 : 0;
+
+            this.diskon.hasil = {
+                hargaAwal: harga,
+                totalPotongan: totalPotongan,
+                persenEfektif: persenEfektif,
+                hargaAkhir: hargaAkhir,
+            };
+        },
+
+        diskonReset() {
+            this.diskon.hargaDisplay = '';
+            this.diskon.hargaRaw = '';
+            this.diskon.persen1 = '';
+            this.diskon.persen2 = '';
+            this.diskon.error = '';
+            this.diskon.hasil = null;
         },
 
         // ════════════════════════════════════════════════════════
