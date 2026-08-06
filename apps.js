@@ -31,6 +31,18 @@ const I18N = {
         diskonHargaAwalLabel: 'Harga Awal',
         diskonTotalPotongan: 'Total Potongan',
         diskonHargaAkhir: 'Harga Akhir',
+        tabSatuan: '📏 Satuan',
+        hintSatuan: '💡 Sesuai tangga satuan: setiap turun 1 tingkat ×10, setiap naik 1 tingkat ÷10',
+        satuanKategori: 'Kategori',
+        satuanPanjang: 'Panjang',
+        satuanBerat: 'Berat',
+        satuanVolume: 'Volume',
+        satuanSuhu: 'Suhu',
+        satuanDari: 'Dari',
+        satuanKe: 'Ke',
+        satuanTukar: 'Tukar satuan',
+        satuanPlaceholder: 'Masukkan nilai',
+        satuanHasilLabel: '📏 Hasil Konversi',
         rightClickBlocked: '❌ Right-click tidak diizinkan di halaman ini!',
         devToolsBlocked: '⚠️ Developer Tools tidak dapat diakses!',
         devToolsDetectedTitle: '⚠️ Akses Developer Tools Terdeteksi!',
@@ -58,6 +70,18 @@ const I18N = {
         diskonHargaAwalLabel: 'Original Price',
         diskonTotalPotongan: 'Total Discount',
         diskonHargaAkhir: 'Final Price',
+        tabSatuan: '📏 Units',
+        hintSatuan: '💡 Follows the metric staircase: each step down ×10, each step up ÷10',
+        satuanKategori: 'Category',
+        satuanPanjang: 'Length',
+        satuanBerat: 'Weight',
+        satuanVolume: 'Volume',
+        satuanSuhu: 'Temperature',
+        satuanDari: 'From',
+        satuanKe: 'To',
+        satuanTukar: 'Swap units',
+        satuanPlaceholder: 'Enter a value',
+        satuanHasilLabel: '📏 Conversion Result',
         rightClickBlocked: '❌ Right-click is not allowed on this page!',
         devToolsBlocked: '⚠️ Developer Tools cannot be accessed!',
         devToolsDetectedTitle: '⚠️ Developer Tools Access Detected!',
@@ -137,6 +161,67 @@ function formatDesimal(nilai, angka = 6) {
     return parseFloat(nilai.toFixed(angka)).toString().replace('.', ',');
 }
 
+// ─── Data Konversi Satuan ────────────────────────────────────
+// Mengikuti sistem "tangga satuan" baku (km-hm-dam-m-dm-cm-mm, dst):
+// setiap turun 1 anak tangga dikali 10, setiap naik 1 anak tangga dibagi 10.
+// "factor" = nilai pengali ke satuan dasar (base) kategori tsb.
+// Urutan array sengaja dari yang terbesar ke terkecil, sesuai urutan tangga.
+const UNIT_META = {
+    panjang: [
+        { key: 'km',  factor: 1000, id: 'Kilometer (km)',   en: 'Kilometer (km)' },
+        { key: 'hm',  factor: 100,  id: 'Hektometer (hm)',  en: 'Hectometer (hm)' },
+        { key: 'dam', factor: 10,   id: 'Dekameter (dam)',  en: 'Decameter (dam)' },
+        { key: 'm',   factor: 1,    id: 'Meter (m)',        en: 'Meter (m)' },
+        { key: 'dm',  factor: 0.1,  id: 'Desimeter (dm)',   en: 'Decimeter (dm)' },
+        { key: 'cm',  factor: 0.01, id: 'Sentimeter (cm)',  en: 'Centimeter (cm)' },
+        { key: 'mm',  factor: 0.001,id: 'Milimeter (mm)',   en: 'Millimeter (mm)' },
+    ],
+    berat: [
+        { key: 'kg',  factor: 1000, id: 'Kilogram (kg)',    en: 'Kilogram (kg)' },
+        { key: 'hg',  factor: 100,  id: 'Hektogram (hg)',   en: 'Hectogram (hg)' },
+        { key: 'dag', factor: 10,   id: 'Dekagram (dag)',   en: 'Decagram (dag)' },
+        { key: 'g',   factor: 1,    id: 'Gram (g)',         en: 'Gram (g)' },
+        { key: 'dg',  factor: 0.1,  id: 'Desigram (dg)',    en: 'Decigram (dg)' },
+        { key: 'cg',  factor: 0.01, id: 'Sentigram (cg)',   en: 'Centigram (cg)' },
+        { key: 'mg',  factor: 0.001,id: 'Miligram (mg)',    en: 'Milligram (mg)' },
+    ],
+    volume: [
+        { key: 'kl',  factor: 1000, id: 'Kiloliter (kl)',   en: 'Kiloliter (kl)' },
+        { key: 'hl',  factor: 100,  id: 'Hektoliter (hl)',  en: 'Hectoliter (hl)' },
+        { key: 'dal', factor: 10,   id: 'Dekaliter (dal)',  en: 'Decaliter (dal)' },
+        { key: 'l',   factor: 1,    id: 'Liter (l)',        en: 'Liter (l)' },
+        { key: 'dl',  factor: 0.1,  id: 'Desiliter (dl)',   en: 'Deciliter (dl)' },
+        { key: 'cl',  factor: 0.01, id: 'Sentiliter (cl)',  en: 'Centiliter (cl)' },
+        { key: 'ml',  factor: 0.001,id: 'Mililiter (ml)',   en: 'Milliliter (ml)' },
+    ],
+    suhu: [
+        { key: 'celsius',    id: 'Celsius (°C)',    en: 'Celsius (°C)' },
+        { key: 'fahrenheit', id: 'Fahrenheit (°F)', en: 'Fahrenheit (°F)' },
+        { key: 'kelvin',     id: 'Kelvin (K)',       en: 'Kelvin (K)' },
+    ],
+};
+
+// Unit default (unitDari/unitKe) saat kategori baru dipilih —
+// dipilih agar langsung berguna (bukan sekadar 2 item pertama di tangga)
+const UNIT_DEFAULT = {
+    panjang: ['m', 'cm'],
+    berat: ['kg', 'g'],
+    volume: ['l', 'ml'],
+    suhu: ['celsius', 'fahrenheit'],
+};
+
+// Konversi suhu selalu melalui Celsius sebagai perantara
+function suhuKeCelsius(nilai, unit) {
+    if (unit === 'fahrenheit') return (nilai - 32) * 5 / 9;
+    if (unit === 'kelvin') return nilai - 273.15;
+    return nilai; // celsius
+}
+function celsiusKeSuhu(celsius, unit) {
+    if (unit === 'fahrenheit') return celsius * 9 / 5 + 32;
+    if (unit === 'kelvin') return celsius + 273.15;
+    return celsius; // celsius
+}
+
 // ─── Sound Manager ─────────────────────────────────────────
 class SoundManager {
     constructor() {
@@ -190,7 +275,7 @@ window.vueApp = new Vue({
         lang: getLang(),
 
         // ── Tab Aktif ──
-        activeTab: 'standar', // 'standar' | 'diskon'
+        activeTab: 'standar', // 'standar' | 'diskon' | 'satuan'
 
         // ── Standar (Kalkulator) ──
         standar: {
@@ -213,6 +298,14 @@ window.vueApp = new Vue({
             error: '',
             hasil: null,        // { hargaAwal, totalPotongan, persenEfektif, hargaAkhir }
         },
+
+        // ── Satuan (Kalkulator Konversi Satuan) ──
+        satuan: {
+            kategori: 'panjang', // 'panjang' | 'berat' | 'volume' | 'suhu'
+            unitDari: 'm',
+            unitKe: 'cm',
+            nilaiDari: '1',
+        },
     },
 
     mounted() {
@@ -228,6 +321,39 @@ window.vueApp = new Vue({
             const d = this.standar.display;
             if (d === 'Error') return d;
             return formatRibuan(d);
+        },
+
+        // ── Satuan (Konversi) ──
+        satuanUnitList() {
+            return UNIT_META[this.satuan.kategori] || [];
+        },
+
+        satuanNilaiDariNum() {
+            const raw = (this.satuan.nilaiDari || '').toString().replace(',', '.');
+            const n = parseFloat(raw);
+            return isNaN(n) ? 0 : n;
+        },
+
+        satuanHasilNum() {
+            const kategori = this.satuan.kategori;
+            const nilai = this.satuanNilaiDariNum;
+
+            if (kategori === 'suhu') {
+                const celsius = suhuKeCelsius(nilai, this.satuan.unitDari);
+                return celsiusKeSuhu(celsius, this.satuan.unitKe);
+            }
+
+            const list = UNIT_META[kategori] || [];
+            const dari = list.find(u => u.key === this.satuan.unitDari);
+            const ke = list.find(u => u.key === this.satuan.unitKe);
+            if (!dari || !ke) return 0;
+
+            const base = nilai * dari.factor;
+            return base / ke.factor;
+        },
+
+        satuanHasilFormatted() {
+            return this.formatSatuanAngka(this.satuanHasilNum);
         },
     },
 
@@ -247,7 +373,7 @@ window.vueApp = new Vue({
 
         // ── Ganti Tab ─────────────────────────────────────────
         gantiTab(tab) {
-            if (tab !== 'standar' && tab !== 'diskon') return;
+            if (tab !== 'standar' && tab !== 'diskon' && tab !== 'satuan') return;
             this.activeTab = tab;
         },
 
@@ -312,6 +438,38 @@ window.vueApp = new Vue({
             this.diskon.persen2 = '';
             this.diskon.error = '';
             this.diskon.hasil = null;
+        },
+
+        // ════════════════════════════════════════════════════════
+        // MODE: SATUAN - KONVERSI SATUAN
+        // ════════════════════════════════════════════════════════
+        satuanGantiKategori() {
+            // Set ulang unit dari/ke ke default yang paling umum dipakai saat kategori berubah
+            const def = UNIT_DEFAULT[this.satuan.kategori];
+            if (def) {
+                this.satuan.unitDari = def[0];
+                this.satuan.unitKe = def[1];
+            }
+        },
+
+        satuanSwap() {
+            const tmp = this.satuan.unitDari;
+            this.satuan.unitDari = this.satuan.unitKe;
+            this.satuan.unitKe = tmp;
+        },
+
+        satuanUnitLabel(key) {
+            const list = UNIT_META[this.satuan.kategori] || [];
+            const u = list.find(x => x.key === key);
+            if (!u) return '';
+            return this.lang === 'id' ? u.id : u.en;
+        },
+
+        formatSatuanAngka(nilai) {
+            if (nilai === null || nilai === undefined || isNaN(nilai)) return '0';
+            // Batasi presisi supaya tidak muncul floating point yang berantakan, lalu buang trailing zero
+            const rounded = parseFloat(nilai.toFixed(6));
+            return formatRibuan(rounded.toString());
         },
 
         // ════════════════════════════════════════════════════════

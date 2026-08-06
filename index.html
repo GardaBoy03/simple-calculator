@@ -46,6 +46,10 @@
                             class="persen-tab"
                             :class="{ active: activeTab === 'diskon' }"
                             @click="playSound('click'); gantiTab('diskon')">{{ t.tabDiskon }}</button>
+                    <button type="button"
+                            class="persen-tab"
+                            :class="{ active: activeTab === 'satuan' }"
+                            @click="playSound('click'); gantiTab('satuan')">{{ t.tabSatuan }}</button>
                 </div>
 
                 <template v-if="activeTab === 'standar'">
@@ -141,6 +145,57 @@
 
                             <span class="wa-label-hasil" style="margin-top:6px;">{{ t.diskonHargaAkhir }}</span>
                             <h1>Rp {{ formatRupiah(diskon.hasil.hargaAkhir) }}</h1>
+                        </div>
+                    </div>
+                </template>
+
+                <template v-if="activeTab === 'satuan'">
+                    <p class="wa-petunjuk">{{ t.hintSatuan }}</p>
+
+                    <!-- Mode Kalkulator Konversi Satuan -->
+                    <div class="single-col-grid">
+                        <div class="input-group">
+                            <label>{{ t.satuanKategori }}</label>
+                            <select v-model="satuan.kategori" @change="playSound('click'); satuanGantiKategori()">
+                                <option value="panjang">{{ t.satuanPanjang }}</option>
+                                <option value="berat">{{ t.satuanBerat }}</option>
+                                <option value="volume">{{ t.satuanVolume }}</option>
+                                <option value="suhu">{{ t.satuanSuhu }}</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>{{ t.satuanDari }}</label>
+                            <div class="satuan-field">
+                                <input type="text"
+                                       inputmode="decimal"
+                                       v-model="satuan.nilaiDari"
+                                       :placeholder="t.satuanPlaceholder">
+                                <select v-model="satuan.unitDari">
+                                    <option v-for="u in satuanUnitList" :key="u.key" :value="u.key">{{ satuanUnitLabel(u.key) }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="satuan-swap-wrap">
+                            <button type="button" class="satuan-swap-btn" @click="playSound('click'); satuanSwap()" :aria-label="t.satuanTukar">⇅</button>
+                        </div>
+
+                        <div class="input-group">
+                            <label>{{ t.satuanKe }}</label>
+                            <select v-model="satuan.unitKe">
+                                <option v-for="u in satuanUnitList" :key="u.key" :value="u.key">{{ satuanUnitLabel(u.key) }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="wa-bubble-container" v-if="satuan.nilaiDari !== ''">
+                        <div class="wa-bubble-hasil">
+                            <span class="wa-label-hasil">{{ t.satuanHasilLabel }}</span>
+                            <div class="hasil-multi-row">
+                                <span class="hasil-multi-label">{{ formatSatuanAngka(satuanNilaiDariNum) }} {{ satuanUnitLabel(satuan.unitDari) }}</span>
+                            </div>
+                            <h1>{{ satuanHasilFormatted }} {{ satuanUnitLabel(satuan.unitKe) }}</h1>
                         </div>
                     </div>
                 </template>
